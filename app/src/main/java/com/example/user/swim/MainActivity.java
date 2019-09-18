@@ -2,30 +2,19 @@ package com.example.user.swim;
 
 import android.content.Context;
 import android.content.Intent;
-import android.location.Location;
 import android.location.LocationManager;
-import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 
-
-import org.osmdroid.api.IMapController;
 import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
-import org.osmdroid.util.MapTileIndex;
+import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.OverlayItem;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
-
-
-import java.util.ArrayList;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -33,8 +22,6 @@ public class MainActivity extends AppCompatActivity {
     private MapView map;
     private MapController mapController;
     private Context ctx;
-    private Location currentLocation;
-
     MyLocationNewOverlay mLocationNewOverlay;
 
     @Override
@@ -65,47 +52,32 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initMyLocation(){
-        map = (MapView) findViewById(R.id.map);
-
+        map = findViewById(R.id.map);
         map.setMultiTouchControls(true);
 
-
-        map = (MapView) findViewById(R.id.map);
+        map.setTilesScaledToDpi(true);
         mapController = (MapController) map.getController();
-        mapController.setZoom(12);
+        mapController.setZoom(18);
         map.setTileSource(TileSourceFactory.MAPNIK);
 
-//        map.setTileSource(new OnlineTileSourceBase("USGS Topo", 0, 18, 256, "",
-//                new String[] { "http://basemap.nationalmap.gov/ArcGIS/rest/services/USGSTopo/MapServer/tile/" }) {
-//            @Override
-//            public String getTileURLString(long pMapTileIndex) {
-//                return getBaseUrl()
-//                        + MapTileIndex.getZoom(pMapTileIndex)
-//                        + "/" + MapTileIndex.getY(pMapTileIndex)
-//                        + "/" + MapTileIndex.getX(pMapTileIndex)
-//                        + mImageFilenameEnding;
-//            }
-//        });
+
+        GpsMyLocationProvider gps = new GpsMyLocationProvider(ctx);
+        gps.addLocationSource(LocationManager.NETWORK_PROVIDER);
 
 
-
-        mLocationNewOverlay= new MyLocationNewOverlay(map);
+        mLocationNewOverlay = new MyLocationNewOverlay(gps, map);
         mLocationNewOverlay.enableMyLocation();
         mLocationNewOverlay.enableFollowLocation();
         mLocationNewOverlay.setDrawAccuracyEnabled(true);
         map.getOverlays().add(this.mLocationNewOverlay);
-
-        mLocationNewOverlay.runOnFirstFix(new Runnable() {
-            @Override
-            public void run() {
-                mapController.animateTo(mLocationNewOverlay.getMyLocation());
-            }
-        });
+        map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
+        map.setHorizontalMapRepetitionEnabled(false);
+        map.setVerticalMapRepetitionEnabled(false);
 
     }
 
     private void setRide(){
-        Button set_ride_btn = (Button)findViewById(R.id.setRide);
+        Button set_ride_btn = findViewById(R.id.setRide);
 
         set_ride_btn.setOnClickListener(new View.OnClickListener() {
             @Override

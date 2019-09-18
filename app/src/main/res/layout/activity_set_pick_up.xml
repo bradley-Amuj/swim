@@ -13,27 +13,74 @@
         android:layout_width="match_parent"
         android:elevation="8dp"
         app:cardCornerRadius="5dp"
-        android:layout_weight="0.25"
+        android:layout_weight="0.20"
         android:layout_height="0dp">
 
-        <EditText
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textAlignment="textStart"
-            android:layout_margin="10dp"
-            android:hint="Current Location"/>
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="10dp"
+                android:drawableLeft="@drawable/baseline_my_location_black_18"
+                android:drawableStart="@drawable/baseline_my_location_black_18"
+                android:drawablePadding="5dp"
+                android:textSize="18sp"
+                android:background="@drawable/rectangle"
+                android:hint="@string/current_location"
+                android:maxLines="1"
+                android:textAlignment="textStart" />
+
+            <EditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:padding="10dp"
+                android:textSize="18sp"
+                android:background="@drawable/rectangle"
+                android:hint="@string/where_to"
+                android:inputType="textPersonName"
+                android:maxLines="1" />
 
 
-
+        </LinearLayout>
 
 
     </androidx.cardview.widget.CardView>
 
-    <org.osmdroid.views.MapView
-        android:id="@+id/mapView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="0.75"/>
+        android:layout_weight="0.80"
+        android:layout_height="0dp">
+
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+        </org.osmdroid.views.MapView>
+
+        <Button
+            android:id="@+id/done_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:visibility="invisible"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:text="@string/done"
+            android:textAlignment="center" />
+
+
+    </RelativeLayout>
 
 
 </LinearLayout>
