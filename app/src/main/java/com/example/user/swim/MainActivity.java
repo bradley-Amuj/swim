@@ -7,6 +7,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -16,6 +19,7 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
     private MapController mapController;
     private Context ctx;
     MyLocationNewOverlay mLocationNewOverlay;
+
+    private BottomSheetBehavior sheetBehavior;
+    private LinearLayout bottom_sheet;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,8 +43,40 @@ public class MainActivity extends AppCompatActivity {
         initMyLocation();
         setRide();
 
+        bottom_sheet = findViewById(R.id.bottom_sheet);
+        sheetBehavior = BottomSheetBehavior.from(bottom_sheet);
+
+        sheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_HIDDEN:
+                        break;
+                    case BottomSheetBehavior.STATE_EXPANDED: {
+
+                    }
+                    break;
+                    case BottomSheetBehavior.STATE_COLLAPSED: {
+
+                    }
+                    break;
+                    case BottomSheetBehavior.STATE_DRAGGING:
+                        break;
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        break;
+                }
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
 
     }
+
+
+
 
     @Override
     protected void onResume() {
@@ -50,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         map.onPause();
     }
+
 
     private void initMyLocation(){
         map = findViewById(R.id.map);
