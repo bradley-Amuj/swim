@@ -22,6 +22,7 @@
         android:textAlignment="center" />
 
 
+
     <EditText
         android:id="@+id/destination"
         android:layout_width="match_parent"
@@ -38,15 +39,11 @@
         android:textAlignment="textStart" />
 
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-
     <Button
         android:id="@+id/search_destination"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Search Destination" />
+        android:text="@string/search_destination" />
 
 
 </LinearLayout>

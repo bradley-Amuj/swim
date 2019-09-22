@@ -8,6 +8,8 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,6 +20,9 @@ import android.widget.Toast;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
+import org.osmdroid.bonuspack.routing.GraphHopperRoadManager;
+import org.osmdroid.bonuspack.routing.Road;
+import org.osmdroid.bonuspack.routing.RoadManager;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.BoundingBox;
@@ -25,22 +30,37 @@ import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
+import org.osmdroid.views.overlay.Overlay;
+import org.osmdroid.views.overlay.Polyline;
+import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+
 
 public class MainActivity extends AppCompatActivity {
-    protected GeoPoint startPoint, destinationPoint;
+    protected GeoPoint startPoint;
+    protected GeoPoint destinationPoint;
+    protected FolderOverlay mRoadNodeMarkers;
+
+    public static Road[] mRoads;
+
+    protected Polyline[] mRoadOverlays;
+    static String TAG = "Debugging";
     protected static int START_INDEX = -2, DEST_INDEX = -1;
     protected Marker markerStart, markerDestination;
 
@@ -52,7 +72,8 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomSheetBehavior sheetBehavior;
     private LinearLayout bottom_sheet;
-    private Button search;
+    private Button search_btn;
+    private EditText destination;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,20 +83,20 @@ public class MainActivity extends AppCompatActivity {
         ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
-
-//        startPoint = mLocationNewOverlay.getMyLocation();
+        Check_Permission();
 
         initMyLocation();
 
+
+        search_btn = findViewById(R.id.search_destination);
         bottom_sheet = findViewById(R.id.bottom_sheet);
         sheetBehavior = BottomSheetBehavior.from(bottom_sheet);
-        search = findViewById(R.id.search_destination);
 
-        search.setOnClickListener(new View.OnClickListener() {
+        search_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                handleSearchButton(DEST_INDEX, R.id.destination);
+                handleSearchButton(R.id.destination);
             }
         });
 
@@ -108,6 +129,35 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private RecyclerView recyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager layoutManager;
+
+
+    private void PopulateSuggestions() {
+        search_btn = findViewById(R.id.search_destination);
+
+        destination = findViewById(R.id.destination);
+        destination.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+
+            }
+        });
+
+
+    }
+
 
     @Override
     protected void onResume() {
@@ -123,15 +173,9 @@ public class MainActivity extends AppCompatActivity {
 
 
     private class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
-        int mIndex;
-
         @Override
         protected List<Address> doInBackground(Object... params) {
-            Log.d("TAG", "doInBackground: In do in background");
-
             String locationAddress = (String) params[0];
-            mIndex = (Integer) params[1];
-
             GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
 
             try {
@@ -139,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 List<Address> foundAdresses = geocoder.getFromLocationName(locationAddress, 1,
                         viewbox.getLatSouth(), viewbox.getLonEast(),
                         viewbox.getLatNorth(), viewbox.getLonWest(), false);
-                Log.d("TAG", "doInBackground: " + foundAdresses);
+//                Log.d("TAG", "doInBackground: " + foundAdresses);
                 return foundAdresses;
             } catch (Exception e) {
                 return null;
@@ -150,15 +194,18 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(List<Address> foundAddresses) {
             super.onPostExecute(foundAddresses);
-            Log.d("TAG", "on post execute: Post execute");
-
             if (foundAddresses == null) {
                 Toast.makeText(getApplicationContext(), "Error GeoCoding", Toast.LENGTH_SHORT).show();
             } else if (foundAddresses.size() == 0) {
                 Toast.makeText(getApplicationContext(), "Couldn't find location", Toast.LENGTH_SHORT).show();
             } else {
-
+//                Log.d("TAG", "onPostExecute: "+foundAddresses.size());
                 Address address = foundAddresses.get(0);
+
+                destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
+
+
+
 
 
 //                String addressDisplayName = address.getExtras().getString("display_name");
@@ -178,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
         }
     }
+
 
     public String getAddress(GeoPoint p) {
         GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
@@ -246,6 +294,7 @@ public class MainActivity extends AppCompatActivity {
         map.setHorizontalMapRepetitionEnabled(false);
         map.setVerticalMapRepetitionEnabled(false);
 
+
     }
 
 
@@ -270,24 +319,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode) {
 
-    void handleSearchButton(int index, int edit_txt) {
+            case REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS: {
+                Map<String, Integer> perms = new HashMap<>();
+                // Initial
+                perms.put(Manifest.permission.WRITE_EXTERNAL_STORAGE, PackageManager.PERMISSION_GRANTED);
+                // Fill with results
+                for (int i = 0; i < permissions.length; i++)
+                    perms.put(permissions[i], grantResults[i]);
+                // Check for WRITE_EXTERNAL_STORAGE
+                Boolean storage = perms.get(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
+                if (!storage) {
+                    // Permission Denied
+                    Toast.makeText(this, "Storage permission is required to store map tiles to reduce data usage and for offline usage.", Toast.LENGTH_LONG).show();
+                } // else: permission was granted, yay!
+            }
+
+        }
+    }
+
+    void handleSearchButton(int edit_txt) {
         EditText destination = findViewById(edit_txt);
-
-
         String destination_address = destination.getText().toString();
 
-        if (destination_address.equals("")) {
+        if (destination_address.isEmpty()) {
 
-            map.invalidate();
+
+            Toast.makeText(this, "Please enter a location", Toast.LENGTH_SHORT).show();
             return;
         }
 
         Toast.makeText(this, "Searching:\n" + destination_address, Toast.LENGTH_LONG).show();
 //        AutoCompleteOnPreferences.storePreference(this, destination_address, SHARED_PREFS_APPKEY, PREF_LOCATIONS_KEY);
-        new GeocodingTask().execute(destination_address, index);
+        new GeocodingTask().execute(destination_address);
 
-//        getRoadAsync();
+        getRoadAsync();
 //        //get and display enclosing polygon:
 //        Bundle extras = address.getExtras();
 //        if (extras != null && extras.containsKey("polygonpoints")){
@@ -299,6 +369,114 @@ public class MainActivity extends AppCompatActivity {
 //        }
 
 
+    }
+
+    private class UpdateRoadTask extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
+        private final Context mContext;
+
+        public UpdateRoadTask(Context context) {
+            this.mContext = context;
+        }
+
+
+        @Override
+        protected Road[] doInBackground(ArrayList<GeoPoint>... params) {
+
+            ArrayList<GeoPoint> waypoints = params[0];
+            RoadManager roadManager;
+
+            Locale locale = Locale.getDefault();
+            roadManager = new GraphHopperRoadManager("fda57d87-34f0-4a12-9ca1-680cc31bf6fb", false);
+            roadManager.addRequestOption("locale=" + locale.getLanguage());
+
+            return roadManager.getRoads(waypoints);
+        }
+
+        @Override
+        protected void onPostExecute(Road[] results) {
+            super.onPostExecute(results);
+            mRoads = results;
+            updateUIWithRoads(mRoads);
+
+
+        }
+    }
+
+    void updateUIWithRoads(Road[] roads) {
+        List<Overlay> mapOverlays = map.getOverlays();
+        if (mRoadOverlays != null) {
+            for (int i = 0; i < mRoadOverlays.length; i++)
+                mapOverlays.remove(mRoadOverlays[i]);
+            mRoadOverlays = null;
+        }
+
+        if (roads == null)
+            return;
+        if (roads[0].mStatus == Road.STATUS_TECHNICAL_ISSUE)
+            Toast.makeText(map.getContext(), "Technical issue when getting the route", Toast.LENGTH_SHORT).show();
+        else if (roads[0].mStatus > Road.STATUS_TECHNICAL_ISSUE) //functional issues
+            Toast.makeText(map.getContext(), "No possible route here", Toast.LENGTH_SHORT).show();
+        mRoadOverlays = new Polyline[roads.length];
+
+        for (int i = 0; i < roads.length; i++) {
+            Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i]);
+            mRoadOverlays[i] = roadPolyline;
+
+            roadPolyline.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
+            roadPolyline.setRelatedObject(i);
+//            roadPolyline.setOnClickListener(new RoadOnClickListener());
+            mapOverlays.add(1, roadPolyline);
+            //we insert the road overlays at the "bottom", just above the MapEventsOverlay,
+            //to avoid covering the other overlays.
+        }
+
+        map.invalidate();
+
+    }
+
+//    void selectRoad(int roadIndex){
+//        mSelectedRoad = roadIndex;
+//        putRoadNodes(mRoads[roadIndex]);
+//        //Set route info in the text view:
+//        for (int i=0; i<mRoadOverlays.length; i++){
+//            Paint p = mRoadOverlays[i].getPaint();
+//            if (i == roadIndex)
+//                p.setColor(0x800000FF); //blue
+//            else
+//                p.setColor(0x90666666); //grey
+//        }
+//        map.invalidate();
+//    }
+
+
+    public void getRoadAsync() {
+
+        mRoads = null;
+        GeoPoint roadStartPoint = null;
+
+
+        // check the start location
+        if (startPoint != null) {
+            roadStartPoint = startPoint;
+            Log.d(TAG, "getRoadAsync: startPoint m1  " + roadStartPoint);
+
+            // if start location is null used current location
+        } else if (mLocationNewOverlay.isEnabled() && mLocationNewOverlay.getMyLocation() != null) {
+
+            roadStartPoint = mLocationNewOverlay.getMyLocation();
+            Log.d(TAG, "getRoadAsync: startPoint m2 " + roadStartPoint);
+
+        }
+
+        if (roadStartPoint == null || destinationPoint == null) {
+            updateUIWithRoads(mRoads);
+            return;
+        }
+
+        ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
+        waypoints.add(roadStartPoint);
+        waypoints.add(destinationPoint);
+        new UpdateRoadTask(this).execute(waypoints);
     }
 
 }
