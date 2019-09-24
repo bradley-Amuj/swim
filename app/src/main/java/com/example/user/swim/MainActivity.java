@@ -3,6 +3,7 @@ package com.example.user.swim;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.LocationManager;
 import android.os.AsyncTask;
@@ -11,12 +12,16 @@ import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
@@ -34,7 +39,6 @@ import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.infowindow.BasicInfoWindow;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
@@ -49,7 +53,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import static com.example.user.swim.MainActivity.TAG;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -80,12 +87,20 @@ public class MainActivity extends AppCompatActivity {
 
 
         super.onCreate(savedInstanceState);
+
+
         ctx = getApplicationContext();
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
         setContentView(R.layout.activity_main);
+        HandleDoneActionKeyboard(R.id.destination);
         Check_Permission();
-
         initMyLocation();
+        Set_up_RecyclerView();
+
+
+
+
+
 
 
         search_btn = findViewById(R.id.search_destination);
@@ -97,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 handleSearchButton(R.id.destination);
+
             }
         });
 
@@ -129,9 +145,30 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void HandleDoneActionKeyboard(int keyID) {
+        EditText keyboard = findViewById(keyID);
+        keyboard.setOnEditorActionListener(new DoneOnEditorActionListener());
+
+        Log.d(TAG, "HandleDoneActionKeyboard:Inside Method");
+
+
+    } // <-Closes the keyboard when done button is clicked
     private RecyclerView recyclerView;
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager layoutManager;
+
+    private void Set_up_RecyclerView() {
+
+        recyclerView = findViewById(R.id.recyclerView);
+
+        layoutManager = new LinearLayoutManager(this);
+
+        recyclerView.setLayoutManager(layoutManager);
+
+
+    }
+
+
 
 
     private void PopulateSuggestions() {
@@ -171,6 +208,7 @@ public class MainActivity extends AppCompatActivity {
         map.onPause();
     }
 
+    static int results = 7;
 
     private class GeocodingTask extends AsyncTask<Object, Void, List<Address>> {
         @Override
@@ -180,10 +218,9 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 BoundingBox viewbox = map.getBoundingBox();
-                List<Address> foundAdresses = geocoder.getFromLocationName(locationAddress, 1,
+                List<Address> foundAdresses = geocoder.getFromLocationName(locationAddress, results,
                         viewbox.getLatSouth(), viewbox.getLonEast(),
                         viewbox.getLatNorth(), viewbox.getLonWest(), false);
-//                Log.d("TAG", "doInBackground: " + foundAdresses);
                 return foundAdresses;
             } catch (Exception e) {
                 return null;
@@ -199,10 +236,17 @@ public class MainActivity extends AppCompatActivity {
             } else if (foundAddresses.size() == 0) {
                 Toast.makeText(getApplicationContext(), "Couldn't find location", Toast.LENGTH_SHORT).show();
             } else {
-//                Log.d("TAG", "onPostExecute: "+foundAddresses.size());
                 Address address = foundAddresses.get(0);
 
                 destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
+
+
+                LocationAdapter adapter = new LocationAdapter(new Location(foundAddresses).createLocationList(results));
+                recyclerView.setHasFixedSize(true);
+                recyclerView.setAdapter(adapter);
+
+//                getRoadAsync();
+                Log.d(TAG, "onPostExecute: Destination POINT " + destinationPoint);
 
 
 
@@ -357,7 +401,6 @@ public class MainActivity extends AppCompatActivity {
 //        AutoCompleteOnPreferences.storePreference(this, destination_address, SHARED_PREFS_APPKEY, PREF_LOCATIONS_KEY);
         new GeocodingTask().execute(destination_address);
 
-        getRoadAsync();
 //        //get and display enclosing polygon:
 //        Bundle extras = address.getExtras();
 //        if (extras != null && extras.containsKey("polygonpoints")){
@@ -371,7 +414,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private class UpdateRoadTask extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
+    private class UpdateRoadTask extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> { //<---- Way points between start and destination
         private final Context mContext;
 
         public UpdateRoadTask(Context context) {
@@ -390,12 +433,16 @@ public class MainActivity extends AppCompatActivity {
             roadManager.addRequestOption("locale=" + locale.getLanguage());
 
             return roadManager.getRoads(waypoints);
+
+
         }
 
         @Override
         protected void onPostExecute(Road[] results) {
             super.onPostExecute(results);
             mRoads = results;
+
+            Log.d(TAG, "onPostExecute: Roads size " + mRoads.length);
             updateUIWithRoads(mRoads);
 
 
@@ -416,21 +463,24 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(map.getContext(), "Technical issue when getting the route", Toast.LENGTH_SHORT).show();
         else if (roads[0].mStatus > Road.STATUS_TECHNICAL_ISSUE) //functional issues
             Toast.makeText(map.getContext(), "No possible route here", Toast.LENGTH_SHORT).show();
-        mRoadOverlays = new Polyline[roads.length];
+        else {
+            mRoadOverlays = new Polyline[roads.length];
 
-        for (int i = 0; i < roads.length; i++) {
-            Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i]);
-            mRoadOverlays[i] = roadPolyline;
 
-            roadPolyline.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-            roadPolyline.setRelatedObject(i);
+            for (int i = 0; i < roads.length; i++) {
+                Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i], Color.BLUE, 10.0f);
+                mRoadOverlays[i] = roadPolyline;
+
+//            roadPolyline.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
+//            roadPolyline.setRelatedObject(i);
 //            roadPolyline.setOnClickListener(new RoadOnClickListener());
-            mapOverlays.add(1, roadPolyline);
-            //we insert the road overlays at the "bottom", just above the MapEventsOverlay,
-            //to avoid covering the other overlays.
-        }
+                mapOverlays.add(1, roadPolyline);
+                //we insert the road overlays at the "bottom", just above the MapEventsOverlay,
+                //to avoid covering the other overlays.
+            }
 
-        map.invalidate();
+            map.invalidate();
+        }
 
     }
 
@@ -454,14 +504,7 @@ public class MainActivity extends AppCompatActivity {
         mRoads = null;
         GeoPoint roadStartPoint = null;
 
-
-        // check the start location
-        if (startPoint != null) {
-            roadStartPoint = startPoint;
-            Log.d(TAG, "getRoadAsync: startPoint m1  " + roadStartPoint);
-
-            // if start location is null used current location
-        } else if (mLocationNewOverlay.isEnabled() && mLocationNewOverlay.getMyLocation() != null) {
+        if (mLocationNewOverlay.isEnabled() && mLocationNewOverlay.getMyLocation() != null) {
 
             roadStartPoint = mLocationNewOverlay.getMyLocation();
             Log.d(TAG, "getRoadAsync: startPoint m2 " + roadStartPoint);
@@ -479,4 +522,87 @@ public class MainActivity extends AppCompatActivity {
         new UpdateRoadTask(this).execute(waypoints);
     }
 
+
 }
+
+class Location {
+
+
+    private List<Address> addresses;
+
+    public Location(List<Address> addresses) {
+        this.addresses = addresses;
+    }
+
+
+    public ArrayList<String> createLocationList(int size) {
+        ArrayList<String> locations = new ArrayList<String>();
+
+        for (int i = 0; i < size; i++) {
+            String address = addresses.get(i).getExtras().getString("display_name");
+            locations.add(address);
+        }
+
+        return locations;
+    }
+}
+
+class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
+
+    private List<String> locations;
+
+    public LocationAdapter(List<String> locations) {
+        this.locations = locations;
+
+
+        for (String l : locations) {
+            Log.d(TAG, "Location " + l + "\n");
+        }
+
+
+    }
+
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Context context = parent.getContext();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        View locationView = inflater.inflate(R.layout.location_item, parent, false);
+
+        ViewHolder viewHolder = new ViewHolder(locationView);
+        return viewHolder;
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+
+        TextView name = holder.display_name;
+        name.setText(locations.get(position));
+
+
+    }
+
+    @Override
+    public int getItemCount() {
+        Log.d(TAG, "getItemCount: " + locations.size());
+        return locations.size();
+    }
+
+    public class ViewHolder extends RecyclerView.ViewHolder {
+
+
+        TextView display_name;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            display_name = itemView.findViewById(R.id.display_name_txt);
+
+
+        }
+    }
+
+
+}
+
+
