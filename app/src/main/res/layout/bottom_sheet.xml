@@ -33,11 +33,18 @@
         android:drawableStart="@drawable/ic_place_black_24dp"
         android:drawableLeft="@drawable/ic_place_black_24dp"
         android:textSize="18sp"
+        android:inputType="text"
         android:background="@drawable/rectangle"
         android:hint="Search for destination"
         android:maxLines="1"
+        android:imeOptions="actionDone"
+
         android:textAlignment="textStart" />
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <Button
         android:id="@+id/search_destination"
