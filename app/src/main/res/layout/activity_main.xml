@@ -8,21 +8,20 @@
     tools:context="com.example.user.swim.MainActivity">
 
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+    <LinearLayout
+        android:id="@+id/linearLayout"
         android:layout_width="match_parent"
-        android:orientation="vertical"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:orientation="vertical"
         android:weightSum="1"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:context="com.example.user.swim.MainActivity">
 
 
-        <org.osmdroid.views.MapView android:id="@+id/map"
+        <org.osmdroid.views.MapView
+            android:id="@+id/map"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
-
 
 
     </LinearLayout>
