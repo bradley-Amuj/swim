@@ -8,10 +8,6 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,14 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
-import com.example.user.swim.AsyncTasks.SetPath;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapController;
@@ -49,11 +43,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.FragmentTransaction;
 
-import static com.example.user.swim.MainActivity.TAG;
-import static com.example.user.swim.MainActivity.current_geoPoint;
+//Todo: make appbar transparent
+//Todo: create a switch mode button
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -66,14 +60,15 @@ public class MainActivity extends AppCompatActivity {
     public static GeoPoint current_geoPoint;
 
     public static Polyline[] mRoadOverlays;
-    static String TAG = "Debugging";
+    public static String TAG = "Debugging";
     protected static int START_INDEX = -2, DEST_INDEX = -1;
     protected Marker markerStart, markerDestination;
 
 
     public static MapView map;
     private MapController mapController;
-    static Context ctx;
+    public static Context ctx;
+    public static Context context;
     public static MyLocationNewOverlay mLocationNewOverlay;
 
     private BottomSheetBehavior sheetBehavior, confirmbehavior;
@@ -85,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static TextView distance, current, final_destination;
 
-
+    public static GeoPoint roadStartPoint;
 
 
 
@@ -95,117 +90,54 @@ public class MainActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_main);
+
+        if (findViewById(R.id.fragment_place) != null) {
+
+
+            if (savedInstanceState != null) {
+                return;
+            }
+
+            SearchLocation fragment = new SearchLocation();
+            FragmentManager fm = getSupportFragmentManager();
+            FragmentTransaction ft = fm.beginTransaction();
+            ft.add(R.id.fragment_place, fragment, "Search_fragment");
+            ft.commit();
+
+        }
+
+
+
+
 
         ctx = getApplicationContext();
+
         Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        setContentView(R.layout.activity_main);
-        HandleDoneActionKeyboard(R.id.destination);
+
+        context = this;
+
+
+//        HandleDoneActionKeyboard(R.id.destination);
         Check_Permission();
+
+
         initMyLocation();
-        Set_up_RecyclerView();
 
 
-        search_btn = findViewById(R.id.search_destination);
-
-        locationList_bottomsheet = findViewById(R.id.bottom_sheet);
 
 
-        send_request = findViewById(R.id.Send_Request);
-
-        sheetBehavior = BottomSheetBehavior.from(locationList_bottomsheet);
-//        confirmbehavior = BottomSheetBehavior.from(confirmLocation_bottomsheet);
-
-//        distance = findViewById(R.id.distance);
-//        current = findViewById(R.id.Current_Location);
-//        final_destination = findViewById(R.id.Destination_location);
-//
-//
 
 
-        search_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                handleSearchButton(R.id.destination);
-
-            }
-        });
 
 
-        sheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                switch (newState) {
-                    case BottomSheetBehavior.STATE_HIDDEN:
-                        break;
-                    case BottomSheetBehavior.STATE_EXPANDED: {
 
-                    }
-                    break;
-                    case BottomSheetBehavior.STATE_COLLAPSED: {
 
-                    }
-                    break;
-                    case BottomSheetBehavior.STATE_DRAGGING:
-                        break;
-                    case BottomSheetBehavior.STATE_SETTLING:
-                        break;
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
-        });
-
-//        confirmbehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-//            @Override
-//            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-//                switch (newState) {
-//                    case BottomSheetBehavior.STATE_HIDDEN:
-//                        break;
-//                    case BottomSheetBehavior.STATE_EXPANDED: {
-//
-//                    }
-//                    break;
-//                    case BottomSheetBehavior.STATE_COLLAPSED: {
-//
-//                    }
-//                    break;
-//                    case BottomSheetBehavior.STATE_DRAGGING:
-//                        break;
-//                    case BottomSheetBehavior.STATE_SETTLING:
-//                        break;
-//                }
-//            }
-//
-//            @Override
-//            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-//
-//            }
-//        });
 
     }
 
 
-    private void createBottomSheet(double distance, String current, String destination) {
 
-        TextView dist, current_txt, destination_txt;
-        dist = findViewById(R.id.distance);
-        current_txt = findViewById(R.id.Current_Location);
-        destination_txt = findViewById(R.id.Destination_location);
-
-        dist.setText(distance + " Km");
-        current_txt.setText(current);
-        destination_txt.setText(destination);
-
-
-        locationList_bottomsheet.setVisibility(View.GONE);
-        confirmLocation_bottomsheet = findViewById(R.id.confirm_bottomSheet);
-
-
-    }
 
     private void HandleDoneActionKeyboard(int keyID) {
         EditText keyboard = findViewById(keyID);
@@ -215,47 +147,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     } // <-Closes the keyboard when done button is clicked
-    private RecyclerView recyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager layoutManager;
-
-    private void Set_up_RecyclerView() {
-
-        recyclerView = findViewById(R.id.recyclerView);
-
-        layoutManager = new LinearLayoutManager(this);
-
-        recyclerView.setLayoutManager(layoutManager);
-
-
-    }
-
-
-    //    private void progressBar(int id){
-//        ProgressBar progressBar = new ProgressBar(this);
-//        progressBar.setVisibility(View.GONE);
-//
-//
-//    }
-    private void clear_edt(int id) {
-        EditText text = findViewById(id);
-
-        text.setText("");
-    }
-
-
-    public void load_details_confirm_location(int currentLocation, int destination, int distance, String myLocation, String final_destination) {
-
-        TextView current_Location = findViewById(currentLocation);
-        current_Location.setText(myLocation);
-
-        TextView dest = findViewById(destination);
-        dest.setText(final_destination);
-
-
-
-
-    }
 
 
     @Override
@@ -270,77 +161,7 @@ public class MainActivity extends AppCompatActivity {
         map.onPause();
     }
 
-    static int results = 7;
-
-    public class GeocodingTask extends AsyncTask<Object, Integer, List<Address>> {
-        @Override
-        protected List<Address> doInBackground(Object... params) {
-            String locationAddress = (String) params[0];
-            GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
-
-            try {
-                BoundingBox viewbox = map.getBoundingBox();
-                List<Address> foundAdresses = geocoder.getFromLocationName(locationAddress, results,
-                        viewbox.getLatSouth(), viewbox.getLonEast(),
-                        viewbox.getLatNorth(), viewbox.getLonWest(), false);
-                return foundAdresses;
-            } catch (Exception e) {
-                return null;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(List<Address> foundAddresses) {
-            super.onPostExecute(foundAddresses);
-            if (foundAddresses == null) {
-                Toast.makeText(ctx.getApplicationContext(), "Error GeoCoding", Toast.LENGTH_SHORT).show();
-            } else if (foundAddresses.size() == 0) {
-                Toast.makeText(ctx.getApplicationContext(), "Couldn't find location", Toast.LENGTH_SHORT).show();
-            } else {
-                Address address = foundAddresses.get(0);
-
-                destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
-//                destination_geoPoint = destinationPoint;
-
-
-                LocationAdapter adapter = new LocationAdapter(new Location(foundAddresses).createList(results), getSupportFragmentManager());
-                recyclerView.setHasFixedSize(true);
-                recyclerView.setAdapter(adapter);
-
-
-//                Log.d(TAG, "Display Name"+ address.getExtras().getString("display_name"));
-//                Log.d(TAG, "Display Name: Class"+ address.getExtras().getString("display_name").getClass());
-//                Log.d(TAG, "Extras"+ address.getExtras());
-
-
-
-
-//                String addressDisplayName = address.getExtras().getString("display_name");
-//
-//                if (mIndex == START_INDEX){
-//                    startPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
-//                    markerStart = updateItineraryMarker(markerStart, startPoint, START_INDEX,
-//                            R.string.departure, R.drawable.marker_departure, -1, addressDisplayName);
-//                    map.getController().setCenter(startPoint);
-//                } else if (mIndex == DEST_INDEX){
-//                    destinationPoint = new GeoPoint(address.getLatitude(), address.getLongitude());
-//                    markerDestination = updateItineraryMarker(markerDestination, destinationPoint, DEST_INDEX,
-//                            R.string.destination, R.drawable.marker_destination, -1, addressDisplayName);
-//                    map.getController().setCenter(destinationPoint);
-//                }
-            }
-
-        }
-
-//        @Override
-//        protected void onProgressUpdate(Integer... values) {
-//            super.onProgressUpdate(values);
-//
-//            progressBar.setProgress(values[0]);
-//
-//        }
-    }
+    public static int results = 5;
 
 
     public String getAddress(GeoPoint p) {
@@ -387,6 +208,8 @@ public class MainActivity extends AppCompatActivity {
             marker.showInfoWindow();
         }
     }
+
+    //Todo: Load map in background as splashscreen loads
     private void initMyLocation(){
         map = findViewById(R.id.map);
         map.setMultiTouchControls(true);
@@ -416,6 +239,7 @@ public class MainActivity extends AppCompatActivity {
 
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
 
+    //Todo: Ask permissions on runtime
     void Check_Permission() {
 
         List<String> permissions = new ArrayList<>();
@@ -458,121 +282,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    void handleSearchButton(int edit_txt) {
-        EditText destination = findViewById(edit_txt);
-        String destination_address = destination.getText().toString();
 
-        if (destination_address.isEmpty()) {
-
-
-            Toast.makeText(this, "Please enter a location", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Toast.makeText(this, "Searching:\n" + destination_address, Toast.LENGTH_LONG).show();
-//        AutoCompleteOnPreferences.storePreference(this, destination_address, SHARED_PREFS_APPKEY, PREF_LOCATIONS_KEY);
-        new GeocodingTask().execute(destination_address);
-
-    }
-
-
-}
-
-
-class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
-
-    private List<Location> locations;
-    private FragmentManager manager;
-
-
-    public LocationAdapter(List<Location> locations, FragmentManager manager) {
-        this.locations = locations;
-        this.manager = manager;
-
-    }
-
-
-
-
-
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        Context context = parent.getContext();
-        LayoutInflater inflater = LayoutInflater.from(context);
-
-        View locationView = inflater.inflate(R.layout.location_item, parent, false);
-
-        ViewHolder viewHolder = new ViewHolder(locationView);
-        return viewHolder;
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull final ViewHolder holder, final int position) {
-
-        TextView name = holder.display_name;
-        name.setText(locations.get(position).getDisplay_name());
-
-
-        holder.parent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                ArrayList<GeoPoint> wayPoints = new ArrayList<>();
-                wayPoints.add(current_geoPoint);
-
-                Log.d(TAG, "Current Location " + current_geoPoint);
-                Log.d(TAG, "Destination " + locations.get(position).getPoint());
-                wayPoints.add(locations.get(position).getPoint());
-
-                new SetPath().getRoadAsync();
-
-                BottomSheet bottomSheet = new BottomSheet();
-                bottomSheet.show(manager, "Dialog");
-
-//
-//                Fragment fragment = new ConfirmLocation();
-//                FragmentManager fm = manager;
-//                FragmentTransaction ft = fm.beginTransaction();
-//                ft.replace(R.id.fragment_place,fragment);
-//                ft.commit();
-
-
-            }
-        });
-
-
-
-
-
-    }
-
-
-    @Override
-    public int getItemCount() {
-
-        return locations.size();
-    }
-
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        final Context context;
-
-        TextView display_name;
-        LinearLayout parent;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            context = itemView.getContext();
-            display_name = itemView.findViewById(R.id.display_name_txt);
-            parent = itemView.findViewById(R.id.parentLayout);
-
-
-
-        }
-
-
-    }
 
 
 }
