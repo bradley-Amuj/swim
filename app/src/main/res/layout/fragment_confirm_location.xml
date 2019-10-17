@@ -16,36 +16,16 @@
         android:text="Confirm Route"
         android:textAlignment="center" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:orientation="horizontal"
-        android:weightSum="1"
-        android:layout_height="wrap_content">
 
-        <TextView
+    <TextView
             android:id="@+id/distance"
             android:layout_margin="5dp"
             android:padding="10dp"
-            android:layout_weight=".5"
             android:textSize="12sp"
             android:textColor="#064374"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text=" 30km" />
-
-        <TextView
-            android:id="@+id/time"
-            android:layout_margin="5dp"
-            android:padding="10dp"
-            android:layout_weight=".5"
-            android:textSize="12sp"
-            android:textColor="#064374"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=" Time" />
-
-
-    </LinearLayout>
 
 
     <TextView
