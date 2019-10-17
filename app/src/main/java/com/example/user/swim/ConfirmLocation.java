@@ -11,6 +11,9 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import static com.example.user.swim.AsyncTasks.SetPath.Distance;
+import static com.example.user.swim.LocationAdapter.location_display;
+
 
 public class ConfirmLocation extends Fragment {
 
@@ -32,14 +35,17 @@ public class ConfirmLocation extends Fragment {
         View view = inflater.inflate(R.layout.fragment_confirm_location, container, false);
 
         distance = view.findViewById(R.id.distance);
-        time = view.findViewById(R.id.time);
         current_l = view.findViewById(R.id.Current_Location);
         destination = view.findViewById(R.id.Destination_location);
 
-        //Todo: set distance, locations and time on  the fragment
+        //Todo:time on  the fragment
+
+        destination.setText(location_display);
 
 //        current_l.setText();
 //        destination.setText();
+
+        distance.setText("Distance: " + String.format("%.2f", (Distance / 1000)) + " Km");
 
         send_request_btn = view.findViewById(R.id.Send_Request);
 

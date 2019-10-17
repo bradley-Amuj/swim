@@ -8,14 +8,12 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.widget.Button;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
-import com.google.android.material.bottomsheet.BottomSheetBehavior;
 
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
 import org.osmdroid.bonuspack.routing.Road;
@@ -40,6 +38,7 @@ import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -71,14 +70,6 @@ public class MainActivity extends AppCompatActivity {
     public static Context context;
     public static MyLocationNewOverlay mLocationNewOverlay;
 
-    private BottomSheetBehavior sheetBehavior, confirmbehavior;
-    public LinearLayout locationList_bottomsheet;
-    public LinearLayout confirmLocation_bottomsheet;
-    private Button search_btn;
-    public static Button send_request;
-    private EditText destination;
-
-    public static TextView distance, current, final_destination;
 
     public static GeoPoint roadStartPoint;
 
@@ -92,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+
         if (findViewById(R.id.fragment_place) != null) {
 
 
@@ -103,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
             FragmentManager fm = getSupportFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
             ft.add(R.id.fragment_place, fragment, "Search_fragment");
+            ft.addToBackStack(null);
             ft.commit();
 
         }
@@ -136,8 +133,42 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+//        FragmentManager fm  = getSupportFragmentManager();
+//        if (fm.getBackStackEntryCount() > 0) {
+//
+//            fm.popBackStack();
+//        } else {
+//
+//            super.onBackPressed();
+//        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case R.id.switch_mode:
+                Toast.makeText(this, " Switching to driver", Toast.LENGTH_SHORT).show();
+
+                break;
+            case R.id.settings:
+                Toast.makeText(this, " Opening settings ", Toast.LENGTH_SHORT).show();
+                break;
+
+        }
+        return super.onOptionsItemSelected(item);
 
 
+    }
 
     private void HandleDoneActionKeyboard(int keyID) {
         EditText keyboard = findViewById(keyID);
@@ -195,17 +226,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private class ReverseGeocodingTask extends AsyncTask<Marker, Void, String> {
-        Marker marker;
+    private class ReverseGeocodingTask extends AsyncTask<GeoPoint, Void, String> {
+        GeoPoint geoPoint;
 
-        protected String doInBackground(Marker... params) {
-            marker = params[0];
-            return getAddress(marker.getPosition());
+        public ReverseGeocodingTask(GeoPoint geoPoint) {
+            this.geoPoint = geoPoint;
+        }
+
+        @Override
+        protected String doInBackground(GeoPoint... geoPoints) {
+
+            GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
+            try {
+                geocoder.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
         }
 
         protected void onPostExecute(String result) {
-            marker.setSnippet(result);
-            marker.showInfoWindow();
+
         }
     }
 
@@ -225,8 +267,10 @@ public class MainActivity extends AppCompatActivity {
 
 
         mLocationNewOverlay = new MyLocationNewOverlay(gps, map);
+
         mLocationNewOverlay.enableMyLocation();
         mLocationNewOverlay.enableFollowLocation();
+
         mLocationNewOverlay.setDrawAccuracyEnabled(true);
         map.getOverlays().add(mLocationNewOverlay);
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
@@ -238,15 +282,19 @@ public class MainActivity extends AppCompatActivity {
 
 
     final private int REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS = 124;
-
-    //Todo: Ask permissions on runtime
     void Check_Permission() {
 
         List<String> permissions = new ArrayList<>();
         String message = "Application permissions:";
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+
+//            mLocationNewOverlay.enableMyLocation();
+//            mLocationNewOverlay.enableFollowLocation();
+        } else {
+
             permissions.add(Manifest.permission.ACCESS_FINE_LOCATION);
             message += "\nLocation to show user location.";
+
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
