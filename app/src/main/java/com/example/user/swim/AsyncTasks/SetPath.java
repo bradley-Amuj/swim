@@ -79,14 +79,8 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
                 Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i], Color.BLUE, 10.0f);
                 mRoadOverlays[i] = roadPolyline;
 
+                Log.d(TAG, "ROAD POLYPOINTS " + roadPolyline.getPoints() + "SIZE " + roadPolyline.getPoints().size());
                 Distance = roadPolyline.getDistance();
-
-
-                Log.d(TAG, "road polyline:" + roadPolyline);
-
-//                roadPolyline.setInfoWindow(new BasicInfoWindow(org.osmdroid.bonuspack.R.layout.bonuspack_bubble, map));
-//                roadPolyline.setRelatedObject(i);
-//            roadPolyline.setOnClickListener(new RoadOnClickListener());
                 mapOverlays.add(1, roadPolyline);
 
             }
@@ -116,6 +110,7 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
         waypoints.add(current_geoPoint);
         waypoints.add(destinationPoint);
         new SetPath().execute(waypoints);
+
     }
 
 

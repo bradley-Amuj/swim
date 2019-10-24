@@ -2,10 +2,10 @@ package com.example.user.swim;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
@@ -158,11 +158,18 @@ public class MainActivity extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.switch_mode:
                 Toast.makeText(this, " Switching to driver", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, DriverSide.class));
+                finish();
 
                 break;
             case R.id.settings:
                 Toast.makeText(this, " Opening settings ", Toast.LENGTH_SHORT).show();
                 break;
+
+            case R.id.logout:
+                Toast.makeText(this, "We are logging you out", Toast.LENGTH_SHORT).show();
+                break;
+
 
         }
         return super.onOptionsItemSelected(item);
@@ -225,31 +232,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private class ReverseGeocodingTask extends AsyncTask<GeoPoint, Void, String> {
-        GeoPoint geoPoint;
-
-        public ReverseGeocodingTask(GeoPoint geoPoint) {
-            this.geoPoint = geoPoint;
-        }
-
-        @Override
-        protected String doInBackground(GeoPoint... geoPoints) {
-
-            GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
-            try {
-                geocoder.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-        }
-
-        protected void onPostExecute(String result) {
-
-        }
-    }
 
     //Todo: Load map in background as splashscreen loads
     private void initMyLocation(){

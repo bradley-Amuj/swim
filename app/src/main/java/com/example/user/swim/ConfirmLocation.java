@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
+import static com.example.user.swim.AsyncTasks.ReverseGeocodingTask.my_location;
 import static com.example.user.swim.AsyncTasks.SetPath.Distance;
 import static com.example.user.swim.LocationAdapter.location_display;
 
@@ -38,12 +39,10 @@ public class ConfirmLocation extends Fragment {
         current_l = view.findViewById(R.id.Current_Location);
         destination = view.findViewById(R.id.Destination_location);
 
-        //Todo:time on  the fragment
+
 
         destination.setText(location_display);
-
-//        current_l.setText();
-//        destination.setText();
+        current_l.setText(my_location);
 
         distance.setText("Distance: " + String.format("%.2f", (Distance / 1000)) + " Km");
 
