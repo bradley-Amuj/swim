@@ -20,6 +20,10 @@
     <string name="done">Done</string>
     <string name="where_would_you_like_to_go">Where would you like to go?</string>
     <string name="search_destination">Search Destination</string>
+    <string name="title_activity_driver_side">DriverSide</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
 
 </resources>

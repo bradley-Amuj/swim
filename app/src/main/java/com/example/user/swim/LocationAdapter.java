@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.user.swim.AsyncTasks.ReverseGeocodingTask;
 import com.example.user.swim.AsyncTasks.SetPath;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import static com.example.user.swim.MainActivity.mLocationNewOverlay;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
 
+    private static String current_location;
     private List<Location> locations;
     public static String location_display;
 
@@ -57,6 +59,7 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
                 current_geoPoint = mLocationNewOverlay.getMyLocation();
                 destinationPoint = locations.get(position).getPoint();
+                new ReverseGeocodingTask(current_geoPoint).execute(current_geoPoint);
                 new SetPath().getRoadAsync();
 
 
