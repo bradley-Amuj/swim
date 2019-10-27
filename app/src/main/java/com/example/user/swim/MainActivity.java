@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        getMenuInflater().inflate(R.menu.passenger_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -198,8 +198,6 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         map.onPause();
     }
-
-    public static int results = 5;
 
 
     public String getAddress(GeoPoint p) {

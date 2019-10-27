@@ -5,10 +5,6 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.user.swim.ConfirmLocation;
-import com.example.user.swim.MainActivity;
-import com.example.user.swim.R;
-
 import org.osmdroid.bonuspack.routing.GraphHopperRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
@@ -21,25 +17,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import static com.example.user.swim.MainActivity.TAG;
-import static com.example.user.swim.MainActivity.context;
 import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
 import static com.example.user.swim.MainActivity.mLocationNewOverlay;
 import static com.example.user.swim.MainActivity.mRoads;
 
+public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
 
-
-public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
-    public static Double Distance;
     private MapView map;
     private Polyline[] mRoadOverlays;
 
-
-    public SetPath(MapView map, Polyline[] mRoadOverlays) {
+    public SetPath_driver(MapView map, Polyline[] mRoadOverlays) {
         this.map = map;
         this.mRoadOverlays = mRoadOverlays;
     }
@@ -59,7 +48,7 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
     protected void onPostExecute(Road[] roads) {
         super.onPostExecute(roads);
         UpdateUI_with_Roads(roads);
-        put_confirm_fragment();
+
 
     }
 
@@ -85,7 +74,6 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
                 mRoadOverlays[i] = roadPolyline;
 
                 Log.d(TAG, "ROAD POLYPOINTS " + roadPolyline.getPoints() + "SIZE " + roadPolyline.getPoints().size());
-                Distance = roadPolyline.getDistance();
                 mapOverlays.add(1, roadPolyline);
 
             }
@@ -114,19 +102,7 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
         ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
         waypoints.add(current_geoPoint);
         waypoints.add(destinationPoint);
-        new SetPath(map, mRoadOverlays).execute(waypoints);
+        new SetPath_driver(map, mRoadOverlays).execute(waypoints);
 
     }
-
-
-    private void put_confirm_fragment() {
-        ConfirmLocation confirmLocation = new ConfirmLocation();
-        FragmentManager fm = ((MainActivity) context).getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.replace(R.id.fragment_place, confirmLocation, "confirm");
-        ft.commit();
-
-    }
-
-
 }

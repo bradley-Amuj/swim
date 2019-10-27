@@ -12,11 +12,10 @@ import java.util.Locale;
 
 public class ReverseGeocodingTask extends AsyncTask<GeoPoint, Void, List<Address>> {
     public static String my_location;
-    GeoPoint geoPoint;
 
 
-    public ReverseGeocodingTask(GeoPoint geoPoint) {
-        this.geoPoint = geoPoint;
+    public ReverseGeocodingTask() {
+
 
 
     }
@@ -27,7 +26,7 @@ public class ReverseGeocodingTask extends AsyncTask<GeoPoint, Void, List<Address
 
         GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
         try {
-            List<Address> loc = geocoder.getFromLocation(geoPoint.getLatitude(), geoPoint.getLongitude(), 1);
+            List<Address> loc = geocoder.getFromLocation(geoPoints[0].getLatitude(), geoPoints[0].getLongitude(), 1);
             return loc;
         } catch (IOException e) {
             e.printStackTrace();
