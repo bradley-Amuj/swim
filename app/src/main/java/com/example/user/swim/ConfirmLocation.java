@@ -19,7 +19,7 @@ import static com.example.user.swim.LocationAdapter.location_display;
 public class ConfirmLocation extends Fragment {
 
     private TextView distance, time, current_l, destination;
-    private Button send_request_btn;
+    private Button send_request_btn, cancel_request;
 
 
 
@@ -47,8 +47,10 @@ public class ConfirmLocation extends Fragment {
         distance.setText("Distance: " + String.format("%.2f", (Distance / 1000)) + " Km");
 
         send_request_btn = view.findViewById(R.id.Send_Request);
+        cancel_request = view.findViewById(R.id.Cancel_Request);
 
         sendRequest();
+        CancelRequest();
 
 
         return view;
@@ -62,6 +64,19 @@ public class ConfirmLocation extends Fragment {
 
 
                 Toast.makeText(getActivity(), "Request is being sent", Toast.LENGTH_LONG).show();
+                startActivity(new Intent(getActivity(), MainActivity.class));
+            }
+        });
+    }
+
+    private void CancelRequest() {
+
+        cancel_request.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Toast.makeText(getActivity(), "Request has been cancelled", Toast.LENGTH_LONG).show();
                 startActivity(new Intent(getActivity(), MainActivity.class));
             }
         });

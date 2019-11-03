@@ -13,6 +13,7 @@
         <activity android:name=".login" />
         <activity
             android:name=".DriverSide"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
             android:label="@string/title_activity_driver_side" />
         <activity
             android:name=".Splash_Screen"

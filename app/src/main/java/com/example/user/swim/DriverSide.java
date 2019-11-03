@@ -20,9 +20,14 @@ public class DriverSide extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        toolbar = getSupportActionBar();
-        toolbar.setTitle("Notifications");
         setContentView(R.layout.activity_driver_side);
+
+//        NavController navController = Navigation.findNavController(this, R.id.fragment_container);
+//        AppBarConfiguration appBarConfiguration =
+//                new AppBarConfiguration.Builder(navController.getGraph()).build();
+//        final Toolbar toolbar = findViewById(R.id.toolbar);
+//        NavigationUI.setupWithNavController(toolbar, navController);
+
 
 
         loadFragment(new Notifications());
@@ -34,12 +39,12 @@ public class DriverSide extends AppCompatActivity {
 
                 switch (menuItem.getItemId()) {
                     case R.id.notifications:
-                        toolbar.setTitle("Notifications");
+//                        toolbar.setTitle("Notifications");
                         loadFragment(new Notifications());
                         break;
 
                     case R.id.create_ride:
-                        toolbar.setTitle("Create Ride");
+//                        toolbar.setTitle("Create Ride");
                         loadFragment(new CreateRide());
                         break;
 

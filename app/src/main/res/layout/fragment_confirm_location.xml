@@ -44,13 +44,31 @@
         android:layout_height="wrap_content"
         android:text="Kangemi" />
 
-
-    <Button
-        android:id="@+id/Send_Request"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_margin="10dp"
         android:layout_height="wrap_content"
-        android:text="Send Request" />
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/Send_Request"
+            android:layout_width="match_parent"
+            android:layout_weight=".5"
+            android:layout_margin="10dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light_blue"
+            android:text="Send Request" />
+
+        <Button
+            android:id="@+id/Cancel_Request"
+            android:layout_width="match_parent"
+            android:layout_weight=".5"
+            android:layout_margin="10dp"
+            android:textColor="@color/red"
+            android:layout_height="wrap_content"
+            android:text="Cancel Request" />
+
+    </LinearLayout>
 
 
 </LinearLayout>

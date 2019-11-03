@@ -10,10 +10,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
+import com.example.user.swim.AsyncTasks.ReverseGeocodingTask;
 
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
 import org.osmdroid.bonuspack.routing.Road;
@@ -45,7 +47,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 //Todo: make appbar transparent
-//Todo: create a switch mode button
+
 
 
 
@@ -71,10 +73,6 @@ public class MainActivity extends AppCompatActivity {
     public static MyLocationNewOverlay mLocationNewOverlay;
 
 
-    public static GeoPoint roadStartPoint;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -85,8 +83,6 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         if (findViewById(R.id.fragment_place) != null) {
 
@@ -133,18 +129,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onBackPressed() {
-//        super.onBackPressed();
-//        FragmentManager fm  = getSupportFragmentManager();
-//        if (fm.getBackStackEntryCount() > 0) {
-//
-//            fm.popBackStack();
-//        } else {
-//
-//            super.onBackPressed();
-//        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -256,6 +240,16 @@ public class MainActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map.setHorizontalMapRepetitionEnabled(false);
         map.setVerticalMapRepetitionEnabled(false);
+
+        map.addOnFirstLayoutListener(new MapView.OnFirstLayoutListener() {
+            @Override
+            public void onFirstLayout(View v, int left, int top, int right, int bottom) {
+                current_geoPoint = mLocationNewOverlay.getMyLocation();
+                new ReverseGeocodingTask().execute(current_geoPoint);
+
+
+            }
+        });
 
 
     }

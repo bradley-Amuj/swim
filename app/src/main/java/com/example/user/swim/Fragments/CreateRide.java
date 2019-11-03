@@ -7,8 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.user.swim.AsyncTasks.GeoCodingTask;
 import com.example.user.swim.R;
@@ -36,6 +38,7 @@ public class CreateRide extends Fragment {
     public static RecyclerView recyclerView_driver;
     private String destination_txt;
 
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -44,6 +47,17 @@ public class CreateRide extends Fragment {
         recyclerView_driver = view.findViewById(R.id.recyclerView_driver_destination);
         recyclerView_driver.setLayoutManager(new LinearLayoutManager(getActivity()));
         driver_current_location.setText("Current location: " + my_location);
+
+        Button createRide = view.findViewById(R.id.create_ride);
+
+        createRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Toast.makeText(getActivity(), "Creating ride ", Toast.LENGTH_SHORT).show();
+
+            }
+        });
 
         Destination = view.findViewById(R.id.driver_destination);
 

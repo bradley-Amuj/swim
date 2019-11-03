@@ -25,6 +25,7 @@ import static com.example.user.swim.MainActivity.mRoads;
 
 public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
 
+    public static ArrayList<GeoPoint> driver_path_points;
     private MapView map;
     private Polyline[] mRoadOverlays;
 
@@ -73,7 +74,9 @@ public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]>
                 Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i], Color.BLUE, 10.0f);
                 mRoadOverlays[i] = roadPolyline;
 
-                Log.d(TAG, "ROAD POLYPOINTS " + roadPolyline.getPoints() + "SIZE " + roadPolyline.getPoints().size());
+                driver_path_points = roadPolyline.getPoints();
+
+                Log.d(TAG, "Road point " + driver_path_points + " Size" + driver_path_points.size());
                 mapOverlays.add(1, roadPolyline);
 
             }
