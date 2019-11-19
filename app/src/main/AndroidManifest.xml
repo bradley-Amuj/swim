@@ -9,12 +9,13 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".sign_up"></activity>
-        <activity android:name=".login" />
+        <activity android:name=".register"></activity>
+        <activity android:name=".log_in" />
+        <activity android:name=".sign_up" />
         <activity
             android:name=".DriverSide"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen"
-            android:label="@string/title_activity_driver_side" />
+            android:label="@string/title_activity_driver_side"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar.FullScreen" />
         <activity
             android:name=".Splash_Screen"
             android:theme="@android:style/Theme.Light.NoTitleBar.Fullscreen">

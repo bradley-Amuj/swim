@@ -55,15 +55,13 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
         TextView name = holder.display_name;
         name.setText(locations.get(position).getDisplay_name());
-        location_display = locations.get(position).getDisplay_name().split(",")[0];
 
 
         holder.parent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.getContext().equals(MainActivity.context)) {
-
-
+                    location_display = locations.get(position).getDisplay_name().split(",")[0];
                     current_geoPoint = mLocationNewOverlay.getMyLocation();
                     destinationPoint = locations.get(position).getPoint();
                     new ReverseGeocodingTask().execute(current_geoPoint);

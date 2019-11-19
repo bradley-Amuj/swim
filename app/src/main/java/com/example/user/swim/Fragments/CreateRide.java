@@ -2,6 +2,8 @@ package com.example.user.swim.Fragments;
 
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +11,15 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.user.swim.AsyncTasks.GeoCodingTask;
+import com.example.user.swim.AsyncTasks.GetPOI;
 import com.example.user.swim.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.views.CustomZoomButtonsController;
@@ -22,6 +28,9 @@ import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -29,7 +38,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.example.user.swim.AsyncTasks.ReverseGeocodingTask.my_location;
+import static com.example.user.swim.MainActivity.TAG;
 import static com.example.user.swim.MainActivity.ctx;
+import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.mLocationNewOverlay;
 
 public class CreateRide extends Fragment {
@@ -37,27 +48,37 @@ public class CreateRide extends Fragment {
     private EditText Destination;
     public static RecyclerView recyclerView_driver;
     private String destination_txt;
+    private FirebaseAuth mAuth;
+    private ProgressBar progressBar;
+    public static Map<String, Object> rideOffers;
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_create_ride, null);
+
+        progressBar = view.findViewById(R.id.progressbar);
         TextView driver_current_location = view.findViewById(R.id.current_driver_location);
         recyclerView_driver = view.findViewById(R.id.recyclerView_driver_destination);
         recyclerView_driver.setLayoutManager(new LinearLayoutManager(getActivity()));
         driver_current_location.setText("Current location: " + my_location);
 
+//        final FirebaseFirestore db = FirebaseFirestore.getInstance();
+//
+//        mAuth = FirebaseAuth.getInstance();
+
+        rideOffers = new HashMap<>();
+
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        Log.d(TAG, "user email: " + user.getEmail() + "  " + user.getDisplayName());
+
+
+
+
         Button createRide = view.findViewById(R.id.create_ride);
 
-        createRide.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
 
-                Toast.makeText(getActivity(), "Creating ride ", Toast.LENGTH_SHORT).show();
-
-            }
-        });
 
         Destination = view.findViewById(R.id.driver_destination);
 
@@ -82,6 +103,27 @@ public class CreateRide extends Fragment {
             }
         });
 
+
+        createRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                if (!TextUtils.isEmpty(destination_txt)) {
+                    progressBar.setVisibility(View.VISIBLE);
+
+
+                    new GetPOI(progressBar, getActivity()).execute(current_geoPoint);
+
+
+                } else {
+
+                    Toast.makeText(getActivity(), "Please select Destination ", Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+        });
         initMap(view);
 
 

@@ -1,33 +1,36 @@
 package com.example.user.swim;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.example.user.swim.Fragments.CreateRide;
 import com.example.user.swim.Fragments.Notifications;
+import com.example.user.swim.Fragments.Profile;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 
 public class DriverSide extends AppCompatActivity {
 
-    private ActionBar toolbar;
+    private Toolbar toolbar;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_driver_side);
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle(null);
+        mAuth = FirebaseAuth.getInstance();
 
-//        NavController navController = Navigation.findNavController(this, R.id.fragment_container);
-//        AppBarConfiguration appBarConfiguration =
-//                new AppBarConfiguration.Builder(navController.getGraph()).build();
-//        final Toolbar toolbar = findViewById(R.id.toolbar);
-//        NavigationUI.setupWithNavController(toolbar, navController);
-
+        setSupportActionBar(toolbar);
 
 
         loadFragment(new Notifications());
@@ -39,17 +42,18 @@ public class DriverSide extends AppCompatActivity {
 
                 switch (menuItem.getItemId()) {
                     case R.id.notifications:
-//                        toolbar.setTitle("Notifications");
+                        toolbar.setTitle("Notifications");
                         loadFragment(new Notifications());
                         break;
 
                     case R.id.create_ride:
-//                        toolbar.setTitle("Create Ride");
+                        toolbar.setTitle("Create Ride");
                         loadFragment(new CreateRide());
                         break;
 
                     case R.id.driver_profile:
-                        Toast.makeText(DriverSide.this, "Driver profile", Toast.LENGTH_SHORT).show();
+                        toolbar.setTitle("Profile");
+                        loadFragment(new Profile());
                         break;
 
                 }
@@ -57,6 +61,39 @@ public class DriverSide extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.driver_menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+            case R.id.switch_mode:
+                Toast.makeText(this, " Switching to driver", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+
+                break;
+
+
+            case R.id.logout:
+                Toast.makeText(this, "We are logging you out", Toast.LENGTH_SHORT).show();
+                mAuth.signOut();
+                startActivity(new Intent(DriverSide.this, log_in.class));
+                finish();
+                break;
+
+
+        }
+
+        return super.onOptionsItemSelected(item);
 
     }
 

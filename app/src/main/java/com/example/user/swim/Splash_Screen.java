@@ -2,9 +2,8 @@ package com.example.user.swim;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Handler;
-
 import android.os.Bundle;
+import android.os.Handler;
 
 public class Splash_Screen extends Activity {
 
@@ -16,7 +15,7 @@ public class Splash_Screen extends Activity {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                startActivity(new Intent(Splash_Screen.this,MainActivity.class));
+                startActivity(new Intent(Splash_Screen.this, log_in.class));
                 finish();
             }
         },3000);

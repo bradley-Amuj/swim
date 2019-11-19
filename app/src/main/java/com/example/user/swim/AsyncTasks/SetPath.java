@@ -2,6 +2,7 @@ package com.example.user.swim.AsyncTasks;
 
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,6 +10,8 @@ import com.example.user.swim.ConfirmLocation;
 import com.example.user.swim.MainActivity;
 import com.example.user.swim.R;
 
+import org.osmdroid.bonuspack.location.NominatimPOIProvider;
+import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.bonuspack.routing.GraphHopperRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
@@ -51,6 +54,17 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
         Locale locale = Locale.getDefault();
         roadManager = new GraphHopperRoadManager("fda57d87-34f0-4a12-9ca1-680cc31bf6fb", false);
         roadManager.addRequestOption("locale=" + locale.getLanguage());
+
+
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
+
+        NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
+        ArrayList<POI> nearmePOI = poiProvider.getPOICloseTo(current_geoPoint, "Bus station", 5, 1);
+        ArrayList<POI> destPOI = poiProvider.getPOICloseTo(destinationPoint, "Bus station", 5, 1);
+//        Log.d(TAG, "POIS NEAR ME "+ nearmePOI.size());
+//        Log.d(TAG, "POIS NEAR ME "+ destPOI.size());
+
 
         return roadManager.getRoads(wayPoints);
     }

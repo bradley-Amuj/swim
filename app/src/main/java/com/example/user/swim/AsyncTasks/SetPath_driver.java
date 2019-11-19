@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.bonuspack.routing.GraphHopperRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.bonuspack.routing.RoadManager;
@@ -29,6 +30,8 @@ public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]>
     private MapView map;
     private Polyline[] mRoadOverlays;
 
+    public static ArrayList<POI> driver_current_location_poi;
+    public static ArrayList<POI> driver_destination_location_poi;
     public SetPath_driver(MapView map, Polyline[] mRoadOverlays) {
         this.map = map;
         this.mRoadOverlays = mRoadOverlays;
@@ -48,6 +51,8 @@ public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]>
     @Override
     protected void onPostExecute(Road[] roads) {
         super.onPostExecute(roads);
+
+
         UpdateUI_with_Roads(roads);
 
 
@@ -76,10 +81,17 @@ public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]>
 
                 driver_path_points = roadPolyline.getPoints();
 
+                ArrayList<GeoPoint> route = new ArrayList<>();
+                route.add(current_geoPoint);
+                route.add(destinationPoint);
+
+
+
                 Log.d(TAG, "Road point " + driver_path_points + " Size" + driver_path_points.size());
                 mapOverlays.add(1, roadPolyline);
 
             }
+
 
             map.invalidate();
         }
