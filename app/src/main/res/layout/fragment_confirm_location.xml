@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:fontFamily="@font/roboto_regular"
         android:layout_margin="10dp"
         android:text="Confirm Route"
         android:textAlignment="center" />
@@ -22,6 +23,7 @@
             android:layout_margin="5dp"
             android:padding="10dp"
             android:textSize="12sp"
+        android:fontFamily="@font/roboto_regular"
             android:textColor="#064374"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,23 +36,45 @@
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:padding="10dp"
+        android:fontFamily="@font/roboto_regular"
         android:text="Strathmore" />
 
     <TextView
         android:id="@+id/Destination_location"
         android:padding="10dp"
         android:layout_margin="5dp"
+        android:fontFamily="@font/roboto_regular"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Kangemi" />
 
-
-    <Button
-        android:id="@+id/Send_Request"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_margin="10dp"
         android:layout_height="wrap_content"
-        android:text="Send Request" />
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <Button
+            android:id="@+id/Send_Request"
+            android:layout_width="match_parent"
+            android:layout_weight=".5"
+            android:layout_margin="10dp"
+            android:fontFamily="@font/roboto_regular"
+            android:layout_height="wrap_content"
+            android:textColor="@color/light_blue"
+            android:text="Send Request" />
+
+        <Button
+            android:id="@+id/Cancel_Request"
+            android:layout_width="match_parent"
+            android:fontFamily="@font/roboto_regular"
+            android:layout_weight=".5"
+            android:layout_margin="10dp"
+            android:textColor="@color/red"
+            android:layout_height="wrap_content"
+            android:text="Cancel Request" />
+
+    </LinearLayout>
 
 
 </LinearLayout>

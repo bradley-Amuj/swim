@@ -26,6 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
             android:textAlignment="center"
+            android:fontFamily="@font/roboto_regular"
             android:imeOptions="actionDone"
             android:text="Loresho" />
 

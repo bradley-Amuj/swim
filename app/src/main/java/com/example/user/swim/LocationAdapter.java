@@ -6,22 +6,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.user.swim.AsyncTasks.ReverseGeocodingTask;
 import com.example.user.swim.AsyncTasks.SetPath;
+import com.example.user.swim.AsyncTasks.SetPath_driver;
+import com.example.user.swim.Fragments.CreateRide;
 
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.example.user.swim.Fragments.CreateRide.map_driver;
+import static com.example.user.swim.Fragments.CreateRide.recyclerView_driver;
 import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
 import static com.example.user.swim.MainActivity.mLocationNewOverlay;
+import static com.example.user.swim.MainActivity.mRoadOverlays;
+import static com.example.user.swim.MainActivity.map;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
-
-    private static String current_location;
     private List<Location> locations;
     public static String location_display;
 
@@ -50,17 +55,30 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
 
         TextView name = holder.display_name;
         name.setText(locations.get(position).getDisplay_name());
-        location_display = locations.get(position).getDisplay_name().split(",")[0];
 
 
         holder.parent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (v.getContext().equals(MainActivity.context)) {
+                    location_display = locations.get(position).getDisplay_name().split(",")[0];
+                    current_geoPoint = mLocationNewOverlay.getMyLocation();
+                    destinationPoint = locations.get(position).getPoint();
+                    new ReverseGeocodingTask().execute(current_geoPoint);
+                    new SetPath(map, mRoadOverlays).getRoadAsync();
+                } else {
 
-                current_geoPoint = mLocationNewOverlay.getMyLocation();
-                destinationPoint = locations.get(position).getPoint();
-                new ReverseGeocodingTask(current_geoPoint).execute(current_geoPoint);
-                new SetPath().getRoadAsync();
+                    current_geoPoint = mLocationNewOverlay.getMyLocation();
+                    destinationPoint = locations.get(position).getPoint();
+                    new ReverseGeocodingTask().execute(current_geoPoint);
+                    new SetPath_driver(map_driver, mRoadOverlays).getRoadAsync();
+                    Toast.makeText(holder.context, "Road map has been drawn", Toast.LENGTH_SHORT).show();
+                    new CreateRide().hideRecyclerView(recyclerView_driver);
+
+
+                }
+
+
 
 
             }

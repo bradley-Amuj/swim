@@ -10,6 +10,7 @@ import com.example.user.swim.LocationAdapter;
 import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
 import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
 
 import java.util.List;
 import java.util.Locale;
@@ -17,17 +18,19 @@ import java.util.Locale;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.example.user.swim.MainActivity.ctx;
-import static com.example.user.swim.MainActivity.map;
-import static com.example.user.swim.MainActivity.results;
 
 public class GeoCodingTask extends AsyncTask<Object, Integer, List<Address>> {
 
     private GeoPoint destinationPoint;
     private RecyclerView recyclerView;
+    private MapView map;
+    private int results;
 
 
-    public GeoCodingTask(RecyclerView recyclerView) {
+    public GeoCodingTask(RecyclerView recyclerView, MapView map, int results) {
         this.recyclerView = recyclerView;
+        this.map = map;
+        this.results = results;
 
 
     }

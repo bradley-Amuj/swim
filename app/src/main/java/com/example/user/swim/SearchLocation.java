@@ -14,6 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import static com.example.user.swim.MainActivity.map;
+
 
 public class SearchLocation extends Fragment {
     private EditText destination;
@@ -30,7 +32,7 @@ public class SearchLocation extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_search_locatiom, null);
+        View view = inflater.inflate(R.layout.fragment_search_location, null);
 
         search = view.findViewById(R.id.search_destination);
         destination = view.findViewById(R.id.destination);
@@ -57,7 +59,7 @@ public class SearchLocation extends Fragment {
                 }
                 Toast.makeText(getActivity(), "Searching:\n" + destination_address, Toast.LENGTH_LONG).show();
 
-                new GeoCodingTask(recyclerView).execute(destination_address);
+                new GeoCodingTask(recyclerView, map, 7).execute(destination_address);
 
 
             }

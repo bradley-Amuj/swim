@@ -4,14 +4,9 @@
 
     <item
         android:id="@+id/switch_mode"
-        android:title="Driver Mode"
+        android:title="Passenger Mode"
         app:showAsAction="never" />
 
-
-    <item
-        android:id="@+id/settings"
-        android:title="Settings"
-        app:showAsAction="never" />
 
     <item
         android:id="@+id/logout"

@@ -1,40 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:weightSum="1"
     android:layout_height="match_parent">
 
-    <org.osmdroid.views.MapView
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_weight="0.8"
-        android:layout_height="0dp"
-        android:layout_marginBottom="10dp" />
+        android:fillViewport="true"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:text="Current location" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:weightSum="1">
+
+            <org.osmdroid.views.MapView
+                android:id="@+id/myMap"
+                android:layout_width="match_parent"
+                android:layout_weight="0.8"
+                android:layout_height="0dp"
+                android:elevation="5dp"
+                android:layout_marginBottom="10dp" />
+
+            <ProgressBar
+                android:id="@+id/progressbar"
+                android:layout_width="100dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_height="100dp"
+                android:indeterminate="true"
+                android:indeterminateTint="@color/light_blue"
+                android:indeterminateTintMode="src_atop"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/current_driver_location"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/roboto_regular"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:layout_marginBottom="5dp"
+                android:padding="20dp"
+                android:text="Current location" />
 
 
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Enter destination" />
+            <EditText
+                android:id="@+id/driver_destination"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:imeOptions="actionDone"
+                android:fontFamily="@font/roboto_regular"
+                android:singleLine="true"
+                android:padding="10dp"
+                android:layout_margin="5dp"
+                android:drawablePadding="5dp"
+                android:drawableStart="@drawable/ic_search_black_24dp"
+                android:drawableLeft="@drawable/ic_search_black_24dp"
+                android:textSize="18sp"
+                android:background="@drawable/rectangle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Enter destination" />
 
-    <TimePicker
-        android:id="@+id/timePicker"
-        android:layout_weight="0.1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:timePickerMode="spinner" />
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView_driver_destination"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Create Ride" />
-
-
+            <Button
+                android:id="@+id/create_ride"
+                android:layout_width="wrap_content"
+                android:fontFamily="@font/roboto_regular"
+                android:textColor="@color/light_blue"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Create Ride" />
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

@@ -4,18 +4,22 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.location.Address;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
+import com.example.user.swim.AsyncTasks.ReverseGeocodingTask;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
-import org.osmdroid.bonuspack.location.GeocoderGraphHopper;
 import org.osmdroid.bonuspack.routing.Road;
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -29,11 +33,9 @@ import org.osmdroid.views.overlay.Polyline;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import androidx.annotation.NonNull;
@@ -45,11 +47,16 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 //Todo: make appbar transparent
-//Todo: create a switch mode button
+
 
 
 
 public class MainActivity extends AppCompatActivity {
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener authListener;
+
+
+
     protected GeoPoint startPoint;
     public static GeoPoint destinationPoint;
     protected FolderOverlay mRoadNodeMarkers;
@@ -71,10 +78,6 @@ public class MainActivity extends AppCompatActivity {
     public static MyLocationNewOverlay mLocationNewOverlay;
 
 
-    public static GeoPoint roadStartPoint;
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -82,11 +85,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+        mAuth = FirebaseAuth.getInstance();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
         if (findViewById(R.id.fragment_place) != null) {
 
@@ -121,7 +123,17 @@ public class MainActivity extends AppCompatActivity {
 
         initMyLocation();
 
+        authListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null) {
 
+
+                    Log.d(TAG, "LOGGED OUT ");
+                }
+            }
+        };
 
 
 
@@ -133,22 +145,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    public void onBackPressed() {
-//        super.onBackPressed();
-//        FragmentManager fm  = getSupportFragmentManager();
-//        if (fm.getBackStackEntryCount() > 0) {
-//
-//            fm.popBackStack();
-//        } else {
-//
-//            super.onBackPressed();
-//        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        getMenuInflater().inflate(R.menu.passenger_menu, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -162,12 +162,12 @@ public class MainActivity extends AppCompatActivity {
                 finish();
 
                 break;
-            case R.id.settings:
-                Toast.makeText(this, " Opening settings ", Toast.LENGTH_SHORT).show();
-                break;
 
             case R.id.logout:
                 Toast.makeText(this, "We are logging you out", Toast.LENGTH_SHORT).show();
+                mAuth.signOut();
+                startActivity(new Intent(MainActivity.this, log_in.class));
+                finish();
                 break;
 
 
@@ -187,50 +187,6 @@ public class MainActivity extends AppCompatActivity {
     } // <-Closes the keyboard when done button is clicked
 
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        map.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        map.onPause();
-    }
-
-    public static int results = 5;
-
-
-    public String getAddress(GeoPoint p) {
-        GeocoderGraphHopper geocoder = new GeocoderGraphHopper(Locale.getDefault(), "fda57d87-34f0-4a12-9ca1-680cc31bf6fb");
-        String theAddress;
-        try {
-            double dLatitude = p.getLatitude();
-            double dLongitude = p.getLongitude();
-            List<Address> addresses = geocoder.getFromLocation(dLatitude, dLongitude, 1);
-            StringBuilder sb = new StringBuilder();
-            if (addresses.size() > 0) {
-                Address address = addresses.get(0);
-                int n = address.getMaxAddressLineIndex();
-                for (int i = 0; i <= n; i++) {
-                    if (i != 0)
-                        sb.append(", ");
-                    sb.append(address.getAddressLine(i));
-                }
-                theAddress = sb.toString();
-            } else {
-                theAddress = null;
-            }
-        } catch (IOException e) {
-            theAddress = null;
-        }
-        if (theAddress != null) {
-            return theAddress;
-        } else {
-            return "";
-        }
-    }
 
 
     //Todo: Load map in background as splashscreen loads
@@ -258,6 +214,29 @@ public class MainActivity extends AppCompatActivity {
         map.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map.setHorizontalMapRepetitionEnabled(false);
         map.setVerticalMapRepetitionEnabled(false);
+
+
+        map.addOnFirstLayoutListener(new MapView.OnFirstLayoutListener() {
+            @Override
+            public void onFirstLayout(View v, int left, int top, int right, int bottom) {
+
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        current_geoPoint = mLocationNewOverlay.getMyLocation();
+                        Log.d(TAG, "current geopint: " + current_geoPoint);
+
+                        new ReverseGeocodingTask().execute(current_geoPoint);
+                    }
+                }, 5000);
+
+
+            }
+        });
+
+
+
+
 
 
     }

@@ -2,15 +2,9 @@ package com.example.user.swim.AsyncTasks;
 
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.StrictMode;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.user.swim.ConfirmLocation;
-import com.example.user.swim.MainActivity;
-import com.example.user.swim.R;
-
-import org.osmdroid.bonuspack.location.NominatimPOIProvider;
 import org.osmdroid.bonuspack.location.POI;
 import org.osmdroid.bonuspack.routing.GraphHopperRoadManager;
 import org.osmdroid.bonuspack.routing.Road;
@@ -24,25 +18,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import static com.example.user.swim.MainActivity.TAG;
-import static com.example.user.swim.MainActivity.context;
 import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
 import static com.example.user.swim.MainActivity.mLocationNewOverlay;
 import static com.example.user.swim.MainActivity.mRoads;
 
+public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
 
-
-public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
-    public static Double Distance;
+    public static ArrayList<GeoPoint> driver_path_points;
     private MapView map;
     private Polyline[] mRoadOverlays;
 
-
-    public SetPath(MapView map, Polyline[] mRoadOverlays) {
+    public static ArrayList<POI> driver_current_location_poi;
+    public static ArrayList<POI> driver_destination_location_poi;
+    public SetPath_driver(MapView map, Polyline[] mRoadOverlays) {
         this.map = map;
         this.mRoadOverlays = mRoadOverlays;
     }
@@ -55,25 +45,16 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
         roadManager = new GraphHopperRoadManager("fda57d87-34f0-4a12-9ca1-680cc31bf6fb", false);
         roadManager.addRequestOption("locale=" + locale.getLanguage());
 
-
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-
-        NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
-        ArrayList<POI> nearmePOI = poiProvider.getPOICloseTo(current_geoPoint, "Bus station", 5, 1);
-        ArrayList<POI> destPOI = poiProvider.getPOICloseTo(destinationPoint, "Bus station", 5, 1);
-//        Log.d(TAG, "POIS NEAR ME "+ nearmePOI.size());
-//        Log.d(TAG, "POIS NEAR ME "+ destPOI.size());
-
-
         return roadManager.getRoads(wayPoints);
     }
 
     @Override
     protected void onPostExecute(Road[] roads) {
         super.onPostExecute(roads);
+
+
         UpdateUI_with_Roads(roads);
-        put_confirm_fragment();
+
 
     }
 
@@ -98,11 +79,19 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
                 Polyline roadPolyline = RoadManager.buildRoadOverlay(roads[i], Color.BLUE, 10.0f);
                 mRoadOverlays[i] = roadPolyline;
 
-                Log.d(TAG, "ROAD POLYPOINTS " + roadPolyline.getPoints() + "SIZE " + roadPolyline.getPoints().size());
-                Distance = roadPolyline.getDistance();
+                driver_path_points = roadPolyline.getPoints();
+
+                ArrayList<GeoPoint> route = new ArrayList<>();
+                route.add(current_geoPoint);
+                route.add(destinationPoint);
+
+
+
+                Log.d(TAG, "Road point " + driver_path_points + " Size" + driver_path_points.size());
                 mapOverlays.add(1, roadPolyline);
 
             }
+
 
             map.invalidate();
         }
@@ -128,19 +117,7 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road[]> {
         ArrayList<GeoPoint> waypoints = new ArrayList<GeoPoint>();
         waypoints.add(current_geoPoint);
         waypoints.add(destinationPoint);
-        new SetPath(map, mRoadOverlays).execute(waypoints);
+        new SetPath_driver(map, mRoadOverlays).execute(waypoints);
 
     }
-
-
-    private void put_confirm_fragment() {
-        ConfirmLocation confirmLocation = new ConfirmLocation();
-        FragmentManager fm = ((MainActivity) context).getSupportFragmentManager();
-        FragmentTransaction ft = fm.beginTransaction();
-        ft.replace(R.id.fragment_place, confirmLocation, "confirm");
-        ft.commit();
-
-    }
-
-
 }
