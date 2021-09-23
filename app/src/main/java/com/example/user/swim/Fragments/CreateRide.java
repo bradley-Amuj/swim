@@ -3,7 +3,6 @@ package com.example.user.swim.Fragments;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +25,6 @@ import org.osmdroid.views.CustomZoomButtonsController;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider;
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -38,10 +36,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import static com.example.user.swim.AsyncTasks.ReverseGeocodingTask.my_location;
-import static com.example.user.swim.MainActivity.TAG;
 import static com.example.user.swim.MainActivity.ctx;
-import static com.example.user.swim.MainActivity.current_geoPoint;
-import static com.example.user.swim.MainActivity.mLocationNewOverlay;
+import static com.example.user.swim.MainActivity.destinationPoint;
 
 public class CreateRide extends Fragment {
     public static MapView map_driver;
@@ -63,15 +59,9 @@ public class CreateRide extends Fragment {
         recyclerView_driver = view.findViewById(R.id.recyclerView_driver_destination);
         recyclerView_driver.setLayoutManager(new LinearLayoutManager(getActivity()));
         driver_current_location.setText("Current location: " + my_location);
-
-//        final FirebaseFirestore db = FirebaseFirestore.getInstance();
-//
-//        mAuth = FirebaseAuth.getInstance();
-
         rideOffers = new HashMap<>();
-
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        Log.d(TAG, "user email: " + user.getEmail() + "  " + user.getDisplayName());
+
 
 
 
@@ -113,7 +103,9 @@ public class CreateRide extends Fragment {
                     progressBar.setVisibility(View.VISIBLE);
 
 
-                    new GetPOI(progressBar, getActivity()).execute(current_geoPoint);
+                    new GetPOI(progressBar, getActivity()).execute(destinationPoint);
+
+                    Destination.setText("");
 
 
                 } else {
@@ -156,13 +148,13 @@ public class CreateRide extends Fragment {
         gps.addLocationSource(LocationManager.NETWORK_PROVIDER);
 
 
-        mLocationNewOverlay = new MyLocationNewOverlay(gps, map_driver);
-
-        mLocationNewOverlay.enableMyLocation();
-        mLocationNewOverlay.enableFollowLocation();
-
-        mLocationNewOverlay.setDrawAccuracyEnabled(true);
-        map_driver.getOverlays().add(mLocationNewOverlay);
+//        mLocationNewOverlay = new MyLocationNewOverlay(gps, map_driver);
+//
+//        mLocationNewOverlay.enableMyLocation();
+//        mLocationNewOverlay.enableFollowLocation();
+//
+//        mLocationNewOverlay.setDrawAccuracyEnabled(true);
+//        map_driver.getOverlays().add(mLocationNewOverlay);
         map_driver.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
         map_driver.setHorizontalMapRepetitionEnabled(false);
         map_driver.setVerticalMapRepetitionEnabled(false);

@@ -2,41 +2,31 @@ package com.example.user.swim.Models;
 
 public class RideOffer {
 
-    public String Email;
-    public String current_location;
-    public String Destination;
+    public String driver_Email;
+    public String passenger_Email;
 
     public RideOffer() {
 
     }
 
-    public RideOffer(String email, String current_location, String destination) {
-        Email = email;
-        this.current_location = current_location;
-        Destination = destination;
+    public RideOffer(String driver_Email, String passenger_Email) {
+        this.driver_Email = driver_Email;
+        this.passenger_Email = passenger_Email;
     }
 
-    public String getEmail() {
-        return Email;
+    public String getDriver_Email() {
+        return driver_Email;
     }
 
-    public void setEmail(String email) {
-        Email = email;
+    public void setDriver_Email(String driver_Email) {
+        this.driver_Email = driver_Email;
     }
 
-    public String getCurrent_location() {
-        return current_location;
+    public String getPassenger_Email() {
+        return passenger_Email;
     }
 
-    public void setCurrent_location(String current_location) {
-        this.current_location = current_location;
-    }
-
-    public String getDestination() {
-        return Destination;
-    }
-
-    public void setDestination(String destination) {
-        Destination = destination;
+    public void setPassenger_Email(String passenger_Email) {
+        this.passenger_Email = passenger_Email;
     }
 }

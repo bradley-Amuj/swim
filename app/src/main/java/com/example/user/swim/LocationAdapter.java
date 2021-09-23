@@ -1,6 +1,7 @@
 package com.example.user.swim;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,14 +21,15 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import static com.example.user.swim.Fragments.CreateRide.map_driver;
 import static com.example.user.swim.Fragments.CreateRide.recyclerView_driver;
+import static com.example.user.swim.MainActivity.TAG;
 import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
-import static com.example.user.swim.MainActivity.mLocationNewOverlay;
 import static com.example.user.swim.MainActivity.mRoadOverlays;
 import static com.example.user.swim.MainActivity.map;
+import static com.example.user.swim.MainActivity.myLocationOverlay;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
-    private List<Location> locations;
+    private final List<Location> locations;
     public static String location_display;
 
 
@@ -62,14 +64,16 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             public void onClick(View v) {
                 if (v.getContext().equals(MainActivity.context)) {
                     location_display = locations.get(position).getDisplay_name().split(",")[0];
-                    current_geoPoint = mLocationNewOverlay.getMyLocation();
+                    current_geoPoint = myLocationOverlay.getLocation();
                     destinationPoint = locations.get(position).getPoint();
+                    Log.d(TAG, "Destination point: " + destinationPoint);
                     new ReverseGeocodingTask().execute(current_geoPoint);
                     new SetPath(map, mRoadOverlays).getRoadAsync();
                 } else {
 
-                    current_geoPoint = mLocationNewOverlay.getMyLocation();
+                    current_geoPoint = myLocationOverlay.getLocation();
                     destinationPoint = locations.get(position).getPoint();
+                    Log.d(TAG, "Destination point: " + destinationPoint);
                     new ReverseGeocodingTask().execute(current_geoPoint);
                     new SetPath_driver(map_driver, mRoadOverlays).getRoadAsync();
                     Toast.makeText(holder.context, "Road map has been drawn", Toast.LENGTH_SHORT).show();

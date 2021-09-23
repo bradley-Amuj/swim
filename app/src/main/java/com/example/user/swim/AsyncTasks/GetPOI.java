@@ -28,11 +28,11 @@ import static com.example.user.swim.MainActivity.TAG;
 
 public class GetPOI extends AsyncTask<GeoPoint, Void, ArrayList<POI>> {
 
-    private FirebaseAuth mAuth;
-    private FirebaseUser user;
-    private FirebaseFirestore db;
-    private ProgressBar progressBar;
-    private Activity activity;
+    private final FirebaseAuth mAuth;
+    private final FirebaseUser user;
+    private final FirebaseFirestore db;
+    private final ProgressBar progressBar;
+    private final Activity activity;
 
     public GetPOI(ProgressBar progressBar, Activity activity) {
         this.progressBar = progressBar;
@@ -48,10 +48,7 @@ public class GetPOI extends AsyncTask<GeoPoint, Void, ArrayList<POI>> {
         ArrayList<POI> POI;
 
         NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
-        POI = poiProvider.getPOICloseTo(geoPoints[0], "Bus station", 5, 4.0);
-
-//        POI= poiProvider.getPOIAlong()
-//        driver_destination_location_poi = poiProvider.getPOICloseTo(destinationPoint,"Bus station",5,10.0);
+        POI = poiProvider.getPOICloseTo(geoPoints[0], "Bus station", 10, 3.0);
 
 
         return POI;
@@ -61,12 +58,16 @@ public class GetPOI extends AsyncTask<GeoPoint, Void, ArrayList<POI>> {
     protected void onPostExecute(ArrayList<POI> pois) {
         super.onPostExecute(pois);
 
-        Log.d(TAG, "onPostExecute: " + pois.size());
+        ArrayList<Long> IDs = new ArrayList<>();
+
+        for (POI poi : pois) {
+            IDs.add(poi.mId);
+        }
 
 
         rideOffers.put("EmailAddress", user.getEmail());
         rideOffers.put("CurrentLocation", my_location);
-        rideOffers.put("POI", pois);
+        rideOffers.put("POI", IDs);
 
         db.collection("RideOffers")
                 .add(rideOffers)

@@ -2,7 +2,6 @@ package com.example.user.swim;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,21 +10,23 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.HashMap;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import static com.example.user.swim.AsyncTasks.ReverseGeocodingTask.my_location;
 import static com.example.user.swim.AsyncTasks.SetPath.Distance;
+import static com.example.user.swim.AsyncTasks.SetPath.destPOI;
 import static com.example.user.swim.LocationAdapter.location_display;
-import static com.example.user.swim.MainActivity.TAG;
-import static com.example.user.swim.MainActivity.current_geoPoint;
-import static com.example.user.swim.MainActivity.destinationPoint;
 
 
 public class ConfirmLocation extends Fragment {
@@ -84,10 +85,8 @@ public class ConfirmLocation extends Fragment {
 
                 db.collection("RideOffers")
 
-                        .whereEqualTo("RoadNodes", current_geoPoint)
-                        .whereEqualTo("RoadNodes", destinationPoint)
 
-//                      .whereArrayContains("RoadNodes",current_geoPoint)
+                        .whereArrayContains("POI", destPOI.get(0).mId)
                         .get()
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                             @Override
@@ -102,13 +101,27 @@ public class ConfirmLocation extends Fragment {
 
                                     } else {
 
-                                        for (QueryDocumentSnapshot documentSnapshots : task.getResult()) {
 
-                                            Log.d(TAG, "EMAIL " + documentSnapshots.get("EmailAddress"));
+                                        for (final QueryDocumentSnapshot documentSnapshots : task.getResult()) {
+                                            HashMap request = new HashMap();
+
+                                            request.put("driverEmail", documentSnapshots.get("EmailAddress"));
+                                            request.put("passangerEmail", mAuth.getCurrentUser().getEmail());
+
+                                            db.collection("RideRequest")
+                                                    .add(request)
+                                                    .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                                                        @Override
+                                                        public void onSuccess(DocumentReference documentReference) {
+                                                            Toast.makeText(getActivity(), "Ride found contact " + documentSnapshots.get("EmailAddress"), Toast.LENGTH_LONG).show();
+                                                            startActivity(new Intent(getActivity(), MainActivity.class));
+
+
+                                                        }
+                                                    });
 
 
                                         }
-                                        Log.d(TAG, "Result " + task.getResult().size());
 
 
                                     }
