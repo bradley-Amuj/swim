@@ -1,5 +1,4 @@
 package com.example.user.swim.AsyncTasks;
-
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.StrictMode;
@@ -68,13 +67,16 @@ public class SetPath extends AsyncTask<ArrayList<GeoPoint>, Void, Road> {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
+        //poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
+        poiProvider = new NominatimPOIProvider("OSMBonusPackTutoUserAgent");
 
         destPOI = poiProvider.getPOICloseTo(destinationPoint, "Bus station", 2, 1);
 
         road = roadManager.getRoad(wayPoints);
 
-        pois = poiProvider.getPOIAlong(road.getRouteLow(), "Bus station", 10, 5.0);
+        //pois = poiProvider.getPOIAlong(road.getRouteLow(), "Bus station", 10, 5.0);
+
+        //Log.d(TAG, "doInBackground: pois" + pois);
 
 
         return road;

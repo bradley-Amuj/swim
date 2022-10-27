@@ -47,9 +47,11 @@ public class GetPOI extends AsyncTask<GeoPoint, Void, ArrayList<POI>> {
     protected ArrayList<POI> doInBackground(GeoPoint... geoPoints) {
         ArrayList<POI> POI;
 
-        NominatimPOIProvider poiProvider = new NominatimPOIProvider("OsmNavigator/1.0");
+        NominatimPOIProvider poiProvider = new NominatimPOIProvider("OSMBonusPackTutoUserAgent");
         POI = poiProvider.getPOICloseTo(geoPoints[0], "Bus station", 10, 3.0);
 
+
+        Log.d(TAG, "doInBackground: Size of POIs " + POI.size());
 
         return POI;
     }

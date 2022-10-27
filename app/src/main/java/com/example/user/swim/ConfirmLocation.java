@@ -84,8 +84,6 @@ public class ConfirmLocation extends Fragment {
                 Toast.makeText(getActivity(), "Request is being sent", Toast.LENGTH_LONG).show();
 
                 db.collection("RideOffers")
-
-
                         .whereArrayContains("POI", destPOI.get(0).mId)
                         .get()
                         .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
