@@ -4,21 +4,22 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.user.swim.ActionListeners.DoneOnEditorActionListener;
-import com.example.user.swim.AsyncTasks.ReverseGeocodingTask;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 
 import org.osmdroid.bonuspack.routing.Road;
@@ -26,13 +27,11 @@ import org.osmdroid.config.Configuration;
 import org.osmdroid.events.MapEventsReceiver;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.GeoPoint;
-import org.osmdroid.util.NetworkLocationIgnorer;
 import org.osmdroid.views.MapController;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.FolderOverlay;
 import org.osmdroid.views.overlay.Marker;
 import org.osmdroid.views.overlay.Polyline;
-import org.osmdroid.views.overlay.mylocation.DirectedLocationOverlay;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,15 +43,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-//Todo: fix bounding box
-
-
-public class MainActivity extends AppCompatActivity implements LocationListener, MapEventsReceiver, SensorEventListener {
+public class MainActivity extends AppCompatActivity implements MapEventsReceiver {
     private FirebaseAuth mAuth;
-    protected GeoPoint startPoint;
+    public static GeoPoint startPoint;
     public static GeoPoint destinationPoint;
     protected FolderOverlay mRoadNodeMarkers;
 
@@ -65,13 +62,16 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected static int START_INDEX = -2, DEST_INDEX = -1;
     protected Marker markerStart, markerDestination;
 
+    //Location Objects
+    private FusedLocationProviderClient fusedLocationProviderClient;
     protected LocationManager mLocationManager;
+
 
     public static MapView map;
     private MapController mapController;
     public static Context ctx;
     public static Context context;
-    public static DirectedLocationOverlay myLocationOverlay;
+//    public static DirectedLocationOverlay myLocationOverlay;
 
 
     @Override
@@ -84,9 +84,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         if (findViewById(R.id.fragment_place) != null) {
-
-
             if (savedInstanceState != null) {
                 return;
             }
@@ -112,28 +111,28 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
             mAuth = FirebaseAuth.getInstance();
             Location myLocation = null;
 
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-                myLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-
-                if (myLocation == null) {
-
-                    myLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                }
-
-                if (myLocation != null) {
-
-                    onLocationChanged(myLocation);
-                } else {
-
-                    // no known location has been found hence disable my current location
-                    myLocationOverlay.setEnabled(false);
-                }
-
-            }
-        } else {
-
-            myLocationOverlay.setLocation((GeoPoint) savedInstanceState.getParcelable("myLocation"));
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//
+//                myLocation = mLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+//
+//                if (myLocation == null) {
+//
+//                    myLocation = mLocationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+//                }
+//
+//                if (myLocation != null) {
+//
+//                    onLocationChanged(myLocation);
+//                } else {
+//
+//                    // no known location has been found hence disable my current location
+//                    myLocationOverlay.setEnabled(false);
+//                }
+//
+//            }
+//        } else {
+//
+//            myLocationOverlay.setLocation((GeoPoint) savedInstanceState.getParcelable("myLocation"));
 
 
         }
@@ -181,25 +180,54 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         keyboard.setOnEditorActionListener(new DoneOnEditorActionListener());
 
 
-
-
     } // <-Closes the keyboard when done button is clicked
 
 
-    //Todo: Load map in background as splashscreen loads
     private void initMyLocation() {
-        map = findViewById(R.id.map);
-        map.setMultiTouchControls(true);
-        map.setMinZoomLevel(1.0);
-        map.setTilesScaledToDpi(true);
-        mapController = (MapController) map.getController();
-        mapController.setZoom(18);
-        map.setTileSource(TileSourceFactory.MAPNIK);
-        map.setHorizontalMapRepetitionEnabled(false);
-        map.setVerticalMapRepetitionEnabled(false);
-        mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        myLocationOverlay = new DirectedLocationOverlay(this);
-        map.getOverlays().add(myLocationOverlay);
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+//        myLocationOverlay = new DirectedLocationOverlay(this);
+        fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+
+
+                    map = findViewById(R.id.map);
+                    map.setMultiTouchControls(true);
+                    map.setMinZoomLevel(1.0);
+                    mapController = (MapController) map.getController();
+                    mapController.setZoom(20);
+                    map.setTileSource(TileSourceFactory.MAPNIK);
+                    map.setHorizontalMapRepetitionEnabled(false);
+                    map.setVerticalMapRepetitionEnabled(false);
+
+                    startPoint = new GeoPoint(location.getLatitude(), location.getLongitude());
+//                    myLocationOverlay.setLocation(startPoint);
+//                    map.getOverlays().add(myLocationOverlay);
+//                    map.getController().animateTo(startPoint);
+                    Marker startMarker = new Marker(map);
+                    startMarker.setPosition(startPoint);
+                    Drawable my_location_icon = ResourcesCompat.getDrawable(getResources(), R.drawable.baseline_my_location_black_48, null);
+                    startMarker.setTextIcon("Current location");
+                    startMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER);
+                    startMarker.setIcon(my_location_icon);
+                    map.getOverlays().add(startMarker);
+                    map.getController().animateTo(startPoint);
+
+
+                    Log.d(TAG, "onSuccess: This is my current location " + location);
+                }
+
+            }
+        }).addOnFailureListener(this, new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(MainActivity.this, "Failed to get current location", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "onFailure: Failed to get current location " + e);
+            }
+        });
 
     }
 
@@ -235,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putParcelable("myLocation", myLocationOverlay.getLocation());
+        // outState.putParcelable("myLocation", myLocationOverlay.getLocation());
 
 
     }
@@ -264,56 +292,6 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         }
     }
 
-    private final NetworkLocationIgnorer mIgnorer = new NetworkLocationIgnorer();
-    long mLastTime = 0; // milliseconds
-    double mSpeed = 0.0; // km/h
-
-    @Override
-    public void onLocationChanged(Location location) {
-
-        long currentTime = System.currentTimeMillis();
-        if (mIgnorer.shouldIgnore(location.getProvider(), currentTime))
-            return;
-        double dT = currentTime - mLastTime;
-        if (dT < 100.0) {
-
-            return;
-        }
-        mLastTime = currentTime;
-
-        GeoPoint newLocation = new GeoPoint(location);
-        if (!myLocationOverlay.isEnabled()) {
-            //we get the location for the first time:
-            myLocationOverlay.setEnabled(true);
-            map.getController().animateTo(newLocation);
-        }
-
-        GeoPoint prevLocation = myLocationOverlay.getLocation();
-        myLocationOverlay.setLocation(newLocation);
-        myLocationOverlay.setAccuracy((int) location.getAccuracy());
-        map.getController().animateTo(newLocation);
-
-        current_geoPoint = newLocation;
-        new ReverseGeocodingTask().execute(current_geoPoint);
-
-    }
-
-    @Override
-    public void onStatusChanged(String provider, int status, Bundle extras) {
-
-    }
-
-    @Override
-    public void onProviderEnabled(String provider) {
-
-    }
-
-    @Override
-    public void onProviderDisabled(String provider) {
-
-    }
-
-
     @Override
     public boolean singleTapConfirmedHelper(GeoPoint p) {
         return false;
@@ -324,16 +302,8 @@ public class MainActivity extends AppCompatActivity implements LocationListener,
         return false;
     }
 
-    @Override
-    public void onSensorChanged(SensorEvent event) {
 
-    }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        myLocationOverlay.setAccuracy(accuracy);
-        map.invalidate();
-    }
 }
 
 

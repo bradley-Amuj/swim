@@ -26,7 +26,7 @@ import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
 import static com.example.user.swim.MainActivity.mRoadOverlays;
 import static com.example.user.swim.MainActivity.map;
-import static com.example.user.swim.MainActivity.myLocationOverlay;
+import static com.example.user.swim.MainActivity.startPoint;
 
 public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHolder> {
     private final List<Location> locations;
@@ -64,14 +64,16 @@ public class LocationAdapter extends RecyclerView.Adapter<LocationAdapter.ViewHo
             public void onClick(View v) {
                 if (v.getContext().equals(MainActivity.context)) {
                     location_display = locations.get(position).getDisplay_name().split(",")[0];
-                    current_geoPoint = myLocationOverlay.getLocation();
+//                    current_geoPoint = myLocationOverlay.getLocation();
+                    current_geoPoint = startPoint;
                     destinationPoint = locations.get(position).getPoint();
                     Log.d(TAG, "Destination point: " + destinationPoint);
                     new ReverseGeocodingTask().execute(current_geoPoint);
                     new SetPath(map, mRoadOverlays).getRoadAsync();
                 } else {
 
-                    current_geoPoint = myLocationOverlay.getLocation();
+//                    current_geoPoint = myLocationOverlay.getLocation();
+                    current_geoPoint = startPoint;
                     destinationPoint = locations.get(position).getPoint();
                     Log.d(TAG, "Destination point: " + destinationPoint);
                     new ReverseGeocodingTask().execute(current_geoPoint);

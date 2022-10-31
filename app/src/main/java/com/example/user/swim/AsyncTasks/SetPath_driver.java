@@ -24,7 +24,8 @@ import static com.example.user.swim.MainActivity.TAG;
 import static com.example.user.swim.MainActivity.current_geoPoint;
 import static com.example.user.swim.MainActivity.destinationPoint;
 import static com.example.user.swim.MainActivity.mRoads;
-import static com.example.user.swim.MainActivity.myLocationOverlay;
+import static com.example.user.swim.MainActivity.startPoint;
+
 
 public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road> {
 
@@ -138,12 +139,14 @@ public class SetPath_driver extends AsyncTask<ArrayList<GeoPoint>, Void, Road> {
         mRoads = null;
         GeoPoint roadStartPoint = null;
 
-        if (myLocationOverlay.isEnabled() && myLocationOverlay.getLocation() != null) {
+//        if (myLocationOverlay.isEnabled() && myLocationOverlay.getLocation() != null) {
+//
+//            roadStartPoint = myLocationOverlay.getLocation();
+//
+//
+//        }
 
-            roadStartPoint = myLocationOverlay.getLocation();
-
-
-        }
+        roadStartPoint = startPoint;
 
         if (roadStartPoint == null || destinationPoint == null) {
             UpdateUI_with_Roads(mRoads);
